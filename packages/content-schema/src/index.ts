@@ -1,3 +1,23 @@
-export { loadSchema } from "./schemas.js";
-export type { Entity } from "./types.js";
-export { validateEntity, type ValidationResult } from "./validator.js";
+export { loadSchema, knownEntityTypes } from "./schemas.js";
+export type {
+  DialogueNode,
+  DialogueTree,
+  Entity,
+  EntityId,
+  EntityType,
+  Hook,
+  Hotspot,
+  HotspotArea,
+  Item,
+  Npc,
+  Room,
+  Script,
+  ScriptRef,
+} from "./types.js";
+export {
+  validateContentDir,
+  validateEntityShape,
+  isDirectory,
+  type ValidationIssue,
+  type ValidationReport,
+} from "./validator.js";

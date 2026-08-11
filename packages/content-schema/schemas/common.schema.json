@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://deme.dev/schemas/common.schema.json",
+  "title": "Common definitions",
+  "description": "Shared building blocks referenced by every concrete deme content schema.",
+  "definitions": {
+    "entityId": {
+      "type": "string",
+      "description": "Stable, explicit identifier used for all cross-entity references. Lowercase kebab-case.",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "minLength": 1
+    },
+    "hook": {
+      "type": "string",
+      "description": "The interaction event that triggers a script.",
+      "enum": ["on-look", "on-use", "on-talk", "on-combine"]
+    },
+    "scriptRef": {
+      "type": "object",
+      "description": "A reference to a Lua script attached to an interaction hook. Exactly one of `scriptId` (a reference to a content/scripts/*.json entity) or `source` (inline Lua source) must be present.",
+      "required": ["hook"],
+      "properties": {
+        "hook": { "$ref": "#/definitions/hook" },
+        "scriptId": {
+          "$ref": "#/definitions/entityId",
+          "description": "References the `id` of a content/scripts/*.json entity of type \"script\"."
+        },
+        "source": {
+          "type": "string",
+          "description": "Inline Lua 5.4 source, run instead of a shared scriptId.",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        { "title": "scriptId", "required": ["scriptId"] },
+        { "title": "source", "required": ["source"] }
+      ]
+    }
+  }
+}

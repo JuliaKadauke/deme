@@ -6,8 +6,10 @@ trees for now; see the epic for the deferred live-LLM fast-follow).
 
 This is a placeholder. Content lives here as plain JSON files validated
 against the schemas in `packages/content-schema`, one entity per file, with
-explicit ID references only (no positional/implicit linking). Expect a
-layout roughly like:
+explicit ID references only (no positional/implicit linking). See
+[docs/authoring-guide.md](../docs/authoring-guide.md) for the full schema
+reference, file layout conventions, and a worked example. Expect a layout
+roughly like:
 
 ```
 content/

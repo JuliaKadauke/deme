@@ -9,13 +9,13 @@
     ".": "./dist/index.js"
   },
   "bin": {
-    "deme-validate-content": "./dist/cli.js"
+    "deme": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
-    "validate": "node dist/cli.js"
+    "validate": "node dist/cli.js validate"
   },
   "dependencies": {
     "ajv": "^8.17.1"

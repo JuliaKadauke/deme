@@ -1,0 +1,6 @@
+{
+  "id": "unlock-desk",
+  "type": "script",
+  "description": "Unlocks the writing desk if the player holds the brass key.",
+  "source": "if hasItem(\"brass-key\") then\n  unlockContainer(\"desk\")\n  describe(\"The lock clicks open.\")\nelse\n  describe(\"It's locked. You need a key.\")\nend"
+}

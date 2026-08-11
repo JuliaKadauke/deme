@@ -1,0 +1,23 @@
+{
+  "id": "butler-intro",
+  "type": "dialogueTree",
+  "npcId": "butler",
+  "rootNodeId": "greet",
+  "nodes": [
+    {
+      "id": "greet",
+      "speaker": "npc",
+      "text": "Good evening. How may I be of service?",
+      "responses": [
+        { "text": "Have you seen a key around here?", "targetNodeId": "about-key" },
+        { "text": "Never mind." }
+      ]
+    },
+    {
+      "id": "about-key",
+      "speaker": "npc",
+      "text": "Why yes, I believe I saw one glinting on the shelf.",
+      "responses": [{ "text": "Thank you." }]
+    }
+  ]
+}

@@ -17,7 +17,7 @@ whitespace-significant structure. Schemas, generated TS types, and a
 validator CLI live in `packages/content-schema`.
 
 Content is data, never code: rules and interactions are validated JSON. The
-AI-facing content authoring guide (see [content-authoring.md](./content-authoring.md))
+AI-facing content authoring guide (see [authoring-guide.md](./authoring-guide.md))
 is a first-class deliverable, since content authors are expected to be AI
 agents.
 

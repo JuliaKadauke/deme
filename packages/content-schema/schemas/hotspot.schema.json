@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://deme.dev/schemas/hotspot.schema.json",
+  "title": "Hotspot",
+  "description": "A clickable/interactive region embedded within a Room. Not a standalone content file — hotspots live inline in room.hotspots[].",
+  "type": "object",
+  "required": ["id", "name", "area"],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/definitions/entityId",
+      "description": "Unique within the owning room. Referenced by that room's exits[].hotspotId."
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "area": {
+      "description": "The clickable region within the room's background image.",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "Rectangle",
+          "required": ["shape", "x", "y", "width", "height"],
+          "properties": {
+            "shape": { "const": "rect" },
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "width": { "type": "number", "exclusiveMinimum": 0 },
+            "height": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "Polygon",
+          "required": ["shape", "points"],
+          "properties": {
+            "shape": { "const": "polygon" },
+            "points": {
+              "type": "array",
+              "minItems": 3,
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": { "type": "number" }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "targetItemId": {
+      "$ref": "common.schema.json#/definitions/entityId",
+      "description": "References a content/items/*.json entity associated with this hotspot (e.g. an item that can be picked up here)."
+    },
+    "targetNpcId": {
+      "$ref": "common.schema.json#/definitions/entityId",
+      "description": "References a content/npcs/*.json entity standing at this hotspot."
+    },
+    "interactions": {
+      "type": "array",
+      "description": "Script(s) run when the player interacts with this hotspot.",
+      "items": { "$ref": "common.schema.json#/definitions/scriptRef" },
+      "default": []
+    }
+  },
+  "additionalProperties": false
+}
