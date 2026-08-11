@@ -40,6 +40,14 @@
           "type": "string",
           "description": "Inline Lua 5.4 source, run instead of a shared scriptId.",
           "minLength": 1
+        },
+        "condition": {
+          "$ref": "#/definitions/stateCondition",
+          "description": "Optional gate: this interaction entry is only offered to the engine's resolver when the condition holds against current GameState. Evaluated directly by the engine (not Lua) — see stateCondition."
+        },
+        "effects": {
+          "$ref": "#/definitions/stateEffect",
+          "description": "Optional GameState mutation applied by the engine when this interaction fires. Evaluated directly by the engine (not Lua) — see stateEffect."
         }
       },
       "additionalProperties": false,
@@ -47,6 +55,50 @@
         { "title": "scriptId", "required": ["scriptId"] },
         { "title": "source", "required": ["source"] }
       ]
+    },
+    "stateCondition": {
+      "type": "object",
+      "description": "A declarative gate evaluated by the engine against the current GameState (flags + inventory), independent of Lua scripting. `source`/`scriptId` remain reserved for future Lua execution (see architecture.md); this is plain data, not code, used to gate interactions and dialogue responses until that sandboxed scripting engine lands.",
+      "properties": {
+        "requiredFlags": {
+          "type": "array",
+          "description": "All of these flags must be set.",
+          "items": { "$ref": "#/definitions/entityId" },
+          "default": []
+        },
+        "forbiddenFlags": {
+          "type": "array",
+          "description": "None of these flags may be set.",
+          "items": { "$ref": "#/definitions/entityId" },
+          "default": []
+        },
+        "requiredItemIds": {
+          "type": "array",
+          "description": "All of these item ids must be present in the player's inventory.",
+          "items": { "$ref": "#/definitions/entityId" },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "stateEffect": {
+      "type": "object",
+      "description": "A declarative GameState mutation (flags only) applied directly by the engine, independent of Lua scripting. See stateCondition.",
+      "properties": {
+        "setFlags": {
+          "type": "array",
+          "description": "Flags to set to true.",
+          "items": { "$ref": "#/definitions/entityId" },
+          "default": []
+        },
+        "clearFlags": {
+          "type": "array",
+          "description": "Flags to clear.",
+          "items": { "$ref": "#/definitions/entityId" },
+          "default": []
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

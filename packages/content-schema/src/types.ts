@@ -10,11 +10,36 @@ export type EntityId = string;
 export type Hook = "on-look" | "on-use" | "on-talk" | "on-combine";
 
 /**
+ * A declarative gate evaluated by the engine against the current GameState
+ * (flags + inventory), independent of Lua scripting. `source`/`scriptId`
+ * remain reserved for future Lua execution; this is plain data, not code,
+ * used to gate interactions and dialogue responses until that sandboxed
+ * scripting engine lands.
+ */
+export interface StateCondition {
+  /** All of these flags must be set. */
+  requiredFlags?: EntityId[];
+  /** None of these flags may be set. */
+  forbiddenFlags?: EntityId[];
+  /** All of these item ids must be present in the player's inventory. */
+  requiredItemIds?: EntityId[];
+}
+
+/** A declarative GameState mutation (flags only) applied directly by the engine. See {@link StateCondition}. */
+export interface StateEffect {
+  /** Flags to set to true. */
+  setFlags?: EntityId[];
+  /** Flags to clear. */
+  clearFlags?: EntityId[];
+}
+
+/**
  * A reference to a Lua script attached to an interaction hook. Exactly one of
  * `scriptId` (a reference to a Script entity) or `source` (inline Lua source)
- * is present.
+ * is present. `condition`/`effects` are evaluated directly by the engine
+ * (not Lua) — see {@link StateCondition}.
  */
-export type ScriptRef = { hook: Hook } & (
+export type ScriptRef = { hook: Hook; condition?: StateCondition; effects?: StateEffect } & (
   { scriptId: EntityId; source?: never } | { scriptId?: never; source: string }
 );
 
@@ -90,6 +115,10 @@ export interface DialogueNode {
     /** References another node's id within the same dialogue tree. Omit to end the dialogue. */
     targetNodeId?: EntityId;
     script?: ScriptRef;
+    /** Optional gate: this response is only offered when the condition holds against current GameState. */
+    condition?: StateCondition;
+    /** Optional GameState mutation applied when the player selects this response. */
+    effects?: StateEffect;
   }[];
 }
 

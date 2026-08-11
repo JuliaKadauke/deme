@@ -1,0 +1,34 @@
+{
+  "id": "jeeves-intro",
+  "type": "dialogueTree",
+  "npcId": "jeeves",
+  "rootNodeId": "greet",
+  "nodes": [
+    {
+      "id": "greet",
+      "speaker": "npc",
+      "text": "Good evening. How may I be of service?",
+      "responses": [
+        { "text": "Have you seen a key around here?", "targetNodeId": "about-key" },
+        {
+          "text": "Well done unlocking the desk.",
+          "targetNodeId": "about-desk",
+          "condition": { "requiredFlags": ["desk-unlocked"] }
+        },
+        { "text": "Never mind.", "effects": { "setFlags": ["met-jeeves"] } }
+      ]
+    },
+    {
+      "id": "about-key",
+      "speaker": "npc",
+      "text": "Why yes, I believe I saw one glinting on the shelf.",
+      "responses": [{ "text": "Thank you." }]
+    },
+    {
+      "id": "about-desk",
+      "speaker": "npc",
+      "text": "Indeed, sir. Impeccable work.",
+      "responses": [{ "text": "Thanks." }]
+    }
+  ]
+}

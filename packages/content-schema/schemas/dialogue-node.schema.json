@@ -30,6 +30,14 @@
           "script": {
             "$ref": "common.schema.json#/definitions/scriptRef",
             "description": "Optional script run when the player selects this response."
+          },
+          "condition": {
+            "$ref": "common.schema.json#/definitions/stateCondition",
+            "description": "Optional gate: this response is only offered to the player when the condition holds against current GameState."
+          },
+          "effects": {
+            "$ref": "common.schema.json#/definitions/stateEffect",
+            "description": "Optional GameState mutation applied when the player selects this response."
           }
         },
         "additionalProperties": false

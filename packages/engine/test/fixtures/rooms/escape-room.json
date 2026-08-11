@@ -1,0 +1,64 @@
+{
+  "id": "escape-room",
+  "type": "room",
+  "name": "Escape Room",
+  "description": "A locked-room puzzle used as @deme/engine's own acceptance-test content pack (not shipped demo content).",
+  "background": "backgrounds/escape-room.png",
+  "walkBox": [
+    [40, 300],
+    [460, 300],
+    [460, 420],
+    [40, 420]
+  ],
+  "hotspots": [
+    {
+      "id": "shelf",
+      "name": "Shelf",
+      "description": "A dusty shelf.",
+      "targetItemId": "brass-key",
+      "area": { "shape": "rect", "x": 20, "y": 100, "width": 60, "height": 40 },
+      "interactions": [
+        { "hook": "on-look", "source": "describe(\"A small brass key glints on the shelf.\")" }
+      ]
+    },
+    {
+      "id": "desk",
+      "name": "Writing Desk",
+      "description": "A heavy oak desk with a small brass lock.",
+      "area": { "shape": "rect", "x": 120, "y": 260, "width": 160, "height": 90 },
+      "interactions": [
+        {
+          "hook": "on-use",
+          "condition": { "requiredItemIds": ["brass-key"] },
+          "effects": { "setFlags": ["desk-unlocked"] },
+          "source": "if hasItem(\"brass-key\") then\n  unlockContainer(\"desk\")\n  describe(\"The lock clicks open.\")\nend"
+        },
+        { "hook": "on-use", "source": "describe(\"It's locked. You need a key.\")" }
+      ]
+    },
+    {
+      "id": "jeeves-spot",
+      "name": "Jeeves",
+      "targetNpcId": "jeeves",
+      "area": { "shape": "rect", "x": 300, "y": 180, "width": 80, "height": 220 },
+      "interactions": [
+        {
+          "hook": "on-look",
+          "source": "describe(\"Jeeves stands ready to help, if asked politely.\")"
+        }
+      ]
+    },
+    {
+      "id": "aria-spot",
+      "name": "ARIA",
+      "targetNpcId": "aria",
+      "area": { "shape": "rect", "x": 400, "y": 180, "width": 80, "height": 220 },
+      "interactions": [
+        { "hook": "on-look", "source": "describe(\"A small speaker glows softly, listening.\")" }
+      ]
+    }
+  ],
+  "npcIds": ["jeeves", "aria"],
+  "itemIds": [],
+  "exits": []
+}

@@ -87,12 +87,27 @@ summary — the JSON Schema files are authoritative if anything here drifts.
   `id` field and every cross-entity reference field.
 - **`hook`** — one of `"on-look"`, `"on-use"`, `"on-talk"`, `"on-combine"`.
   The interaction event a script is attached to.
-- **`scriptRef`** — `{ hook, scriptId? , source? }`. Exactly one of:
+- **`scriptRef`** — `{ hook, scriptId? , source?, condition?, effects? }`.
+  Exactly one of:
   - `scriptId`: references a `content/scripts/*.json` entity's `id`.
   - `source`: inline Lua 5.4 source, self-contained in this file.
 
   A `scriptRef` never declares neither or both — the validator rejects both
-  cases.
+  cases. `condition`/`effects` are optional and independent of
+  `scriptId`/`source` — see **`stateCondition`**/**`stateEffect`** below.
+
+- **`stateCondition`** — `{ requiredFlags?, forbiddenFlags?, requiredItemIds? }`
+  (all arrays of ids, all optional). A declarative gate, evaluated directly
+  by `@deme/engine` against the current game state (flags + inventory) —
+  plain data, not code, so it doesn't run afoul of rule 4 above. Used on a
+  `scriptRef` (only that interaction entry applies once its condition holds)
+  and on a dialogue response (only offered to the player once its condition
+  holds). This exists as the interim mechanism for "gate this by flags/items
+  the player has" ahead of the Lua scripting engine landing — `source`/
+  `scriptId` remain reserved for arbitrary logic once that engine exists.
+- **`stateEffect`** — `{ setFlags?, clearFlags? }` (both arrays of flag ids,
+  optional). A declarative game-state mutation applied by `@deme/engine` when
+  a gated `scriptRef` interaction fires or a dialogue response is chosen.
 
 ### Hotspot (embedded in `room.hotspots[]`, `hotspot.schema.json`)
 
@@ -149,12 +164,12 @@ Not a standalone content file. A clickable region within a room's background.
 
 Not a standalone content file.
 
-| field       | required | notes                                                                                                                                                                                                                                        |
-| ----------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`        | yes      | unique within the owning tree                                                                                                                                                                                                                |
-| `speaker`   | yes      | `"npc"` or `"player"`                                                                                                                                                                                                                        |
-| `text`      | yes      |                                                                                                                                                                                                                                              |
-| `responses` | no       | array of `{text, targetNodeId?, script?}`. Omit `targetNodeId` to end the dialogue after this response; otherwise it must reference another node `id` in the same tree. `script` is an optional `scriptRef` run when the response is chosen. |
+| field       | required | notes                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`        | yes      | unique within the owning tree                                                                                                                                                                                                                                                                                                                                                                           |
+| `speaker`   | yes      | `"npc"` or `"player"`                                                                                                                                                                                                                                                                                                                                                                                   |
+| `text`      | yes      |                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `responses` | no       | array of `{text, targetNodeId?, script?, condition?, effects?}`. Omit `targetNodeId` to end the dialogue after this response; otherwise it must reference another node `id` in the same tree. `script` is an optional `scriptRef` run when the response is chosen. `condition` (a `stateCondition`) hides this response until it holds; `effects` (a `stateEffect`) applies when the player chooses it. |
 
 ### DialogueTree (`content/dialogue/<id>.json`, `dialogue-tree.schema.json`)
 

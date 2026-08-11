@@ -1,0 +1,11 @@
+{
+  "id": "brass-key",
+  "type": "item",
+  "name": "Brass Key",
+  "description": "A small, ornate brass key.",
+  "portable": true,
+  "icon": "assets/items/brass-key.png",
+  "interactions": [
+    { "hook": "on-look", "source": "describe(\"It looks like it fits a small lock.\")" }
+  ]
+}

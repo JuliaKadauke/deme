@@ -14,6 +14,8 @@ export type {
   Room,
   Script,
   ScriptRef,
+  StateCondition,
+  StateEffect,
 } from "./types.js";
 export {
   validateContentDir,
