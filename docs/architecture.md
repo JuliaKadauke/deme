@@ -32,14 +32,38 @@ smallest/fastest embeddable-language option for untrusted content in a
 resource-constrained runtime.
 
 Sandboxing is a first-class engine requirement, not an afterthought, because
-unreviewed community content is playable in-browser. Hard acceptance
-criteria for the scripting sandbox:
+unreviewed community content is playable in-browser. The sandbox
+(`packages/engine/src/lua-sandbox.ts`, wired into interaction resolution via
+`script-runtime.ts`/`game-session.ts`) meets these hard acceptance criteria:
 
-- Whitelist-only global environment (no `io`, `os`, `require`, `load`).
-- An instruction-count budget enforced via debug hooks.
-- A call/recursion depth limit.
-- A VM memory ceiling.
-- iframe + CSP isolation around the player app, as defense-in-depth.
+- **Whitelist-only global environment**: no standard library is opened at
+  all (no `io`, `os`, `require`, `load`, `dofile` — not even `print`), only
+  the game-state accessor/action functions documented in
+  [authoring-guide.md](./authoring-guide.md#the-lua-sandboxs-whitelisted-api),
+  injected fresh per script execution.
+- **An instruction-count budget**, enforced via a Lua debug hook
+  (`LuaEventMasks.Count`) that aborts the script once it exceeds a
+  configured instruction count — stops infinite loops.
+- **A call/recursion depth limit**, via `lua_setcstacklimit` — stops
+  unbounded recursion with a clean Lua "stack overflow" error.
+- **A VM memory ceiling**, via wasmoon's allocation tracing
+  (`traceAllocations` + `setMemoryMax`) — further allocations past the
+  ceiling fail as Lua out-of-memory errors instead of growing unbounded.
+- **iframe + CSP isolation around the player app**, as defense-in-depth —
+  see [`apps/player/README.md`](../apps/player/README.md). The player app is
+  split into an inert host page (`index.html`) that embeds the actual game
+  (`play.html`) in an `<iframe sandbox="allow-scripts">` — deliberately
+  without `allow-same-origin` — so even a VM-level sandbox escape has no
+  origin to reach the host page's DOM/cookies, or another game's data,
+  through. Each page also carries its own CSP (`play.html`'s allows
+  `'wasm-unsafe-eval'` for wasmoon and nothing broader); `frame-ancestors`
+  and `X-Frame-Options`, which CSP `<meta>` tags can't express, are set via
+  `apps/player/public/_headers`.
+
+A script that throws — a sandbox limit, or just an authoring bug reaching an
+undefined function — aborts only itself; `GameSession` catches it and fires
+a `script-error` event rather than letting it propagate, so one bad script
+can never take down the session.
 
 ## Graphics
 

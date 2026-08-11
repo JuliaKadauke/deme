@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@deme/content-schema": "workspace:*",
-    "pixi.js": "^8.6.6"
+    "pixi.js": "^8.6.6",
+    "wasmoon": "^1.16.0"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

@@ -102,9 +102,10 @@ summary — the JSON Schema files are authoritative if anything here drifts.
   plain data, not code, so it doesn't run afoul of rule 4 above. Used on a
   `scriptRef` (only that interaction entry applies once its condition holds)
   and on a dialogue response (only offered to the player once its condition
-  holds). This exists as the interim mechanism for "gate this by flags/items
-  the player has" ahead of the Lua scripting engine landing — `source`/
-  `scriptId` remain reserved for arbitrary logic once that engine exists.
+  holds). This is the lightweight, sandboxing-free mechanism for "gate this
+  by flags/items the player has"; `source`/`scriptId` (Lua, see
+  [The Lua sandbox's whitelisted API](#the-lua-sandboxs-whitelisted-api)
+  below) is for logic beyond a plain gate.
 - **`stateEffect`** — `{ setFlags?, clearFlags? }` (both arrays of flag ids,
   optional). A declarative game-state mutation applied by `@deme/engine` when
   a gated `scriptRef` interaction fires or a dialogue response is chosen.
@@ -190,6 +191,36 @@ Not a standalone content file.
 
 Referenced from any `scriptRef` via `scriptId`, letting multiple
 interactions share one script instead of duplicating inline `source`.
+
+### The Lua sandbox's whitelisted API
+
+`source` runs in a fresh, empty Lua 5.4 VM per execution ([wasmoon](https://github.com/ceifa/wasmoon);
+see [architecture.md](./architecture.md#scripting) and
+[`packages/engine/src/lua-sandbox.ts`](../packages/engine/src/lua-sandbox.ts)
+for the sandboxing itself). There is **no standard library at all** — no
+`io`, `os`, `require`, `load`, `dofile`, and not even `print`/`pairs`/`pcall`
+— only core Lua syntax (`if`/`for`/`while`, local variables, arithmetic,
+string concatenation via `..`, etc.) plus these functions:
+
+| function             | kind   | does                                               |
+| -------------------- | ------ | -------------------------------------------------- |
+| `hasFlag(flagId)`    | read   | `true` if `flagId` is set on the current GameState |
+| `hasItem(itemId)`    | read   | `true` if the player is carrying `itemId`          |
+| `currentRoomId()`    | read   | the current room's `id`                            |
+| `setFlag(flagId)`    | action | sets a flag                                        |
+| `clearFlag(flagId)`  | action | clears a flag                                      |
+| `giveItem(itemId)`   | action | adds `itemId` to the player's inventory            |
+| `removeItem(itemId)` | action | removes `itemId` from the player's inventory       |
+| `gotoRoom(roomId)`   | action | transitions the player to another room             |
+| `describe(text)`     | action | shows the player a message                         |
+
+Calling anything else (an unknown global, `io`, `require`, ...) fails the
+script with a Lua error — the interaction's `condition`/`effects` still
+applied beforehand, but nothing past the failing call runs. A script that
+loops or recurses without bound is aborted by the sandbox's instruction
+budget or call-depth limit, the same as any other script error — it does
+not hang or crash the page. Write scripts as straight-line puzzle checks
+(read state, then act), not general-purpose programs.
 
 ## Worked example: a room, an item, an NPC, and a dialogue tree
 
@@ -322,7 +353,7 @@ validate` as-is.
   "id": "unlock-desk",
   "type": "script",
   "description": "Unlocks the writing desk if the player holds the brass key.",
-  "source": "if hasItem(\"brass-key\") then\n  unlockContainer(\"desk\")\n  describe(\"The lock clicks open.\")\nelse\n  describe(\"It's locked. You need a key.\")\nend"
+  "source": "if hasItem(\"brass-key\") then\n  setFlag(\"desk-unlocked\")\n  describe(\"The lock clicks open.\")\nelse\n  describe(\"It's locked. You need a key.\")\nend"
 }
 ```
 

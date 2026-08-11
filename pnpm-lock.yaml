@@ -76,6 +76,9 @@ importers:
       pixi.js:
         specifier: ^8.6.6
         version: 8.19.0
+      wasmoon:
+        specifier: ^1.16.0
+        version: 1.16.0
     devDependencies:
       typescript:
         specifier: ^5.7.3
@@ -490,6 +493,9 @@ packages:
 
   '@types/earcut@3.0.0':
     resolution: {integrity: sha512-k/9fOUGO39yd2sCjrbAJvGDEQvRwRnQIZlBz43roGwUZo5SHAmyVvSFyaVVZkicRVCaDXPKlbxrUcBuJoSWunQ==}
+
+  '@types/emscripten@1.39.10':
+    resolution: {integrity: sha512-TB/6hBkYQJxsZHSqyeuO1Jt0AB/bW6G7rHt9g7lML7SOF6lbgcHvw/Lr+69iqN0qxgXLhWKScAon73JNnptuDw==}
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
@@ -1320,6 +1326,10 @@ packages:
     resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
     engines: {node: '>=18'}
 
+  wasmoon@1.16.0:
+    resolution: {integrity: sha512-FlRLb15WwAOz1A9OQDbf6oOKKSiefi5VK0ZRF2wgH9xk3o5SnU11tNPaOnQuAh1Ucr66cwwvVXaeVRaFdRBt5g==}
+    hasBin: true
+
   webidl-conversions@7.0.0:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
@@ -1634,6 +1644,8 @@ snapshots:
   '@types/deep-eql@4.0.2': {}
 
   '@types/earcut@3.0.0': {}
+
+  '@types/emscripten@1.39.10': {}
 
   '@types/estree@1.0.9': {}
 
@@ -2524,6 +2536,10 @@ snapshots:
   w3c-xmlserializer@5.0.0:
     dependencies:
       xml-name-validator: 5.0.0
+
+  wasmoon@1.16.0:
+    dependencies:
+      '@types/emscripten': 1.39.10
 
   webidl-conversions@7.0.0: {}
 

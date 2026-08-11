@@ -60,3 +60,11 @@ export {
   type StorageLike,
 } from "./save-load.js";
 export { GameSession, type ContentLoaders, type GameSessionOptions } from "./game-session.js";
+export {
+  DEFAULT_LUA_SANDBOX_LIMITS,
+  LuaInstructionBudgetExceededError,
+  runSandboxedLua,
+  type LuaApi,
+  type LuaSandboxLimits,
+} from "./lua-sandbox.js";
+export { runInteractionScript, type ScriptActions } from "./script-runtime.js";

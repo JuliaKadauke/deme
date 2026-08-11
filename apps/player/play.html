@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      This is the frame that will render actual game content, including the
+      sandboxed Lua/wasmoon VM described in docs/architecture.md#scripting —
+      it's the thing index.html's iframe isolates from the host page. This
+      CSP is the in-page defense-in-depth layer: no eval, no inline
+      scripts/styles, only same-origin script/style/image/connect/worker
+      sources, plus 'wasm-unsafe-eval' (WebAssembly compilation, nothing
+      broader — not general eval) for wasmoon. `frame-ancestors` can't be
+      expressed via a meta tag (the CSP spec ignores it here); see
+      apps/player/README.md for the HTTP-header config a real deployment
+      needs on top of this.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'"
+    />
+    <title>deme — play</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,4 +1,13 @@
-import type { DialogueTree, EntityId, Hook, Hotspot, Item, Npc } from "@deme/content-schema";
+import type {
+  DialogueTree,
+  EntityId,
+  Hook,
+  Hotspot,
+  Item,
+  Npc,
+  Script,
+  ScriptRef,
+} from "@deme/content-schema";
 import type { Container } from "pixi.js";
 import { applyEffects, evaluateCondition } from "./conditions.js";
 import { DialogueRuntime } from "./dialogue-runtime.js";
@@ -7,8 +16,10 @@ import type { Point } from "./geometry.js";
 import { GameRuntime, type RoomLoader } from "./game-runtime.js";
 import { GameState } from "./game-state.js";
 import { Inventory } from "./inventory.js";
+import type { LuaSandboxLimits } from "./lua-sandbox.js";
 import type { TextureLoader } from "./room-scene.js";
 import { DEFAULT_SAVE_KEY, loadGameState, saveGameState, type StorageLike } from "./save-load.js";
+import { runInteractionScript } from "./script-runtime.js";
 import type { Verb } from "./verbs.js";
 
 /** Loads content entities by id. Left up to the host app, same as GameRuntime's `loadRoom`. */
@@ -17,6 +28,8 @@ export interface ContentLoaders {
   loadItem: (itemId: EntityId) => Promise<Item>;
   loadNpc: (npcId: EntityId) => Promise<Npc>;
   loadDialogueTree: (treeId: EntityId) => Promise<DialogueTree>;
+  /** Resolves a `ScriptRef.scriptId` reference to its shared Script entity. Only called for entries that use `scriptId` rather than inline `source`. */
+  loadScript: (scriptId: EntityId) => Promise<Script>;
 }
 
 export interface GameSessionOptions {
@@ -31,6 +44,8 @@ export interface GameSessionOptions {
   startRoomId: EntityId;
   /** Resumes from this GameState instead of starting a new game at `startRoomId`. */
   initialState?: GameState;
+  /** Overrides the sandboxed Lua VM's resource limits (instruction budget, call depth, memory) for interaction scripts. See lua-sandbox.ts for defaults. */
+  scriptLimits?: Partial<LuaSandboxLimits>;
 }
 
 /**
@@ -47,8 +62,19 @@ export interface GameSessionOptions {
  * 3. Verb is `talk` and the hotspot has an NPC with a dialogue tree → start it.
  * 4. Otherwise → resolve `hotspot.interactions` for the click's hook: the
  *    first entry whose `condition` holds against current GameState has its
- *    `effects` applied. `source`/`scriptId` are left untouched — running Lua
- *    is a separate, not-yet-built scripting engine (see architecture.md).
+ *    `effects` applied, then its `source`/`scriptId` Lua (if any) is run
+ *    through the sandboxed VM in lua-sandbox.ts/script-runtime.ts — see
+ *    "Scripting" below.
+ *
+ * ### Scripting
+ *
+ * Once a `ScriptRef` entry's `condition` matches and `effects` are applied,
+ * its Lua `source` (inline) or the Script entity `scriptId` resolves to (via
+ * `loaders.loadScript`) is run in a fresh sandboxed VM (`runInteractionScript`),
+ * with the whitelisted game-state API bound to this session's `state` and
+ * `inventory`/`runtime`. A script that throws (a bug, or adversarial content
+ * hitting a sandbox limit) fires `script-error` instead of propagating —
+ * one bad script aborts only itself, never the session.
  */
 export class GameSession {
   readonly events = new Emitter<EngineEventMap>();
@@ -57,11 +83,13 @@ export class GameSession {
   readonly inventory: Inventory;
 
   private readonly loaders: ContentLoaders;
+  private readonly scriptLimits: Partial<LuaSandboxLimits> | undefined;
   private activeDialogue: DialogueRuntime | undefined;
   private dialogueNpcId: EntityId | undefined;
 
   constructor(options: GameSessionOptions) {
     this.loaders = options.loaders;
+    this.scriptLimits = options.scriptLimits;
     this.state = options.initialState ?? new GameState({ currentRoomId: options.startRoomId });
     this.inventory = new Inventory(this.state);
 
@@ -189,13 +217,13 @@ export class GameSession {
       return;
     }
 
-    this.resolveHotspotInteractions(hotspot, hook);
+    await this.resolveHotspotInteractions(hotspot, hook);
   }
 
   private async useSelectedItemOnHotspot(roomId: EntityId, hotspot: Hotspot): Promise<void> {
     const gesture = this.inventory.useSelectedOn({ kind: "hotspot", roomId, hotspot });
     if (!gesture) return;
-    const resolved = this.resolveHotspotInteractions(hotspot, "on-use");
+    const resolved = await this.resolveHotspotInteractions(hotspot, "on-use");
     this.events.emit("item-used", { itemId: gesture.itemId, target: gesture.target, resolved });
   }
 
@@ -209,7 +237,7 @@ export class GameSession {
         return;
       }
     }
-    this.resolveHotspotInteractions(hotspot, hook);
+    await this.resolveHotspotInteractions(hotspot, hook);
   }
 
   private async tryStartDialogue(npcId: EntityId): Promise<void> {
@@ -231,13 +259,14 @@ export class GameSession {
     runtime.start();
   }
 
-  /** Applies the first `hook`-matching interaction whose condition holds. Returns whether one was found. */
-  private resolveHotspotInteractions(hotspot: Hotspot, hook: Hook): boolean {
+  /** Applies the first `hook`-matching interaction whose condition holds (effects, then Lua). Returns whether one was found. */
+  private async resolveHotspotInteractions(hotspot: Hotspot, hook: Hook): Promise<boolean> {
     const entry = (hotspot.interactions ?? []).find(
       (ref) => ref.hook === hook && evaluateCondition(ref.condition, this.state),
     );
     if (!entry) return false;
     applyEffects(entry.effects, this.state);
+    await this.runScriptRef(entry);
     return true;
   }
 
@@ -250,6 +279,38 @@ export class GameSession {
     );
     if (!entry) return false;
     applyEffects(entry.effects, this.state);
+    await this.runScriptRef(entry);
     return true;
+  }
+
+  /**
+   * Runs a matched ScriptRef's Lua, if it has any (`source` inline, or
+   * `scriptId` resolved via `loaders.loadScript`) — a no-op for entries that
+   * are pure `condition`/`effects` gates. Failures (sandbox limits,
+   * authoring bugs, an undefined whitelist function) fire `script-error`
+   * instead of throwing, so one bad script can't take down the session.
+   */
+  private async runScriptRef(ref: ScriptRef): Promise<void> {
+    try {
+      const source = ref.scriptId
+        ? (await this.loaders.loadScript(ref.scriptId)).source
+        : ref.source;
+      if (!source) return;
+
+      await runInteractionScript(
+        source,
+        this.state,
+        {
+          giveItem: (itemId) => this.inventory.add(itemId),
+          removeItem: (itemId) => this.inventory.remove(itemId),
+          changeRoom: (roomId) => void this.runtime.loadRoom(roomId),
+          describe: (text) => this.events.emit("script-message", { text }),
+        },
+        this.scriptLimits,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.events.emit("script-error", { hook: ref.hook, message });
+    }
   }
 }

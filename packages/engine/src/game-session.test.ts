@@ -26,7 +26,7 @@ const room: Room = {
           hook: "on-use",
           condition: { requiredItemIds: ["key"] },
           effects: { setFlags: ["unlocked"] },
-          source: "noop",
+          source: 'describe("The desk unlocks with a satisfying click.")',
         },
       ],
     },
@@ -48,7 +48,7 @@ const glue: Item = {
   type: "item",
   name: "Glue",
   combinesWithItemIds: ["key"],
-  interactions: [{ hook: "on-combine", effects: { setFlags: ["glued"] }, source: "noop" }],
+  interactions: [{ hook: "on-combine", effects: { setFlags: ["glued"] }, source: "" }],
 };
 
 const npc: Npc = { id: "npc-a", type: "npc", name: "Npc A", dialogueTreeId: "tree-a" };
@@ -72,6 +72,9 @@ function makeLoaders(): ContentLoaders {
     loadItem: async (id) => items[id]!,
     loadNpc: async (id) => npcs[id]!,
     loadDialogueTree: async (id) => trees[id]!,
+    loadScript: async (id) => {
+      throw new Error(`unexpected loadScript("${id}") — this suite only uses inline source`);
+    },
   };
 }
 
@@ -117,8 +120,11 @@ describe("GameSession", () => {
     expect(session.state.inventory).toEqual(["key"]);
   });
 
-  it("unlocks a flag-gated hotspot interaction via mere possession under the use verb", async () => {
+  it("unlocks a flag-gated hotspot interaction via mere possession under the use verb, running its Lua source", async () => {
     const { stage, session } = await makeSession();
+    const messages: unknown[] = [];
+    session.events.on("script-message", (e) => messages.push(e));
+
     session.setVerb("pick-up");
     tapAt(stage, 25, 25); // pick up the key
     await vi_flush();
@@ -128,6 +134,7 @@ describe("GameSession", () => {
     await vi_flush();
 
     expect(session.state.hasFlag("unlocked")).toBe(true);
+    expect(messages).toEqual([{ text: "The desk unlocks with a satisfying click." }]);
   });
 
   it("leaves the flag-gated interaction locked without the item", async () => {
@@ -231,7 +238,15 @@ describe("GameSession", () => {
   });
 });
 
-/** Flushes the microtask queue so pending `void this.handleHotspotInteract(...)` promises settle before assertions. */
-function vi_flush(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 0));
+/**
+ * Flushes pending `void this.handleHotspotInteract(...)` work before
+ * assertions — including, now, a sandboxed Lua script run, which can take a
+ * handful of event-loop turns the first time it cold-starts wasmoon's WASM
+ * module. A single `setTimeout(0)` isn't reliably enough turns for that; loop
+ * a few to stay robust without hardcoding a wall-clock duration.
+ */
+async function vi_flush(): Promise<void> {
+  for (let i = 0; i < 20; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
 }

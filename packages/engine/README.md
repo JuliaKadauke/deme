@@ -8,12 +8,16 @@ and transitions between rooms on exit-hotspot triggers. On top of that,
 `GameRuntime`'s events so hotspot clicks can read/mutate state and trigger
 dialogue — see "Game state, inventory, and dialogue" below.
 
-Lua scripting does not live here yet — content's `source`/`scriptId` fields
-are left untouched by this package. That's a separate, later piece (the
-sandboxed wasmoon VM described in `docs/architecture.md`), tracked
-independently of state/inventory/dialogue because of its much larger,
-security-sensitive acceptance surface (whitelist globals, instruction
-budget, recursion limit, memory ceiling).
+Lua scripting lives here too: `lua-sandbox.ts` runs a `ScriptRef`'s
+`source`/`scriptId` in a sandboxed wasmoon (Lua 5.4-on-WASM) VM — an empty,
+whitelist-only global environment, an instruction-count budget, a call-depth
+limit, and a memory ceiling — and `script-runtime.ts` binds the whitelisted
+game-state API to it. `GameSession` runs a matched interaction's script
+after applying its `condition`/`effects`, catching any failure into a
+`script-error` event instead of letting it propagate. See "Scripting" below
+and [`docs/architecture.md`](../../docs/architecture.md#scripting) for the
+sandbox's full threat model, including the iframe + CSP isolation around
+`apps/player`.
 
 ## Interaction model
 
@@ -43,10 +47,10 @@ everywhere, which matters for hand-authored/LLM-authored content.
 
 - **`hotspot-interact`** — a hotspot was clicked under the current verb.
   `{ roomId, hotspot, verb, hook }`. `GameSession` subscribes to this to
-  resolve pickup/dialogue/gated-interaction behavior — see "Game state,
-  inventory, and dialogue" below. `RoomController`/`GameRuntime` alone don't
-  interpret it any further; a future Lua scripting system will eventually run
-  `hotspot.interactions` entries' `source`/`scriptId` for the matching hook.
+  resolve pickup/dialogue/gated-interaction behavior, including running
+  `hotspot.interactions` entries' `source`/`scriptId` for the matching hook
+  — see "Game state, inventory, and dialogue" and "Scripting" below.
+  `RoomController`/`GameRuntime` alone don't interpret it any further.
 - **`room-exit`** — fired alongside `hotspot-interact` when the clicked
   hotspot is one of the room's `exits[]`. `{ fromRoomId, hotspotId,
 targetRoomId }`. `GameRuntime` itself subscribes to this to load and swap in
@@ -80,21 +84,21 @@ A hotspot click resolves in this order (see
    `dialogueTreeId` → start a `DialogueRuntime` for it, firing
    `dialogue-started`.
 4. **Otherwise** → resolve `hotspot.interactions`: the first entry whose
-   `hook` matches the click and whose `condition` holds is applied (its
-   `effects` mutate `GameState`). `source`/`scriptId` are left untouched.
+   `hook` matches the click and whose `condition` holds has its `effects`
+   applied, then its `source`/`scriptId` Lua (if any) run — see "Scripting"
+   below.
 
-Item-on-item use (`GameSession#useSelectedItemOnItem`) works similarly,
+Item-on-item use (`GameSession#useSelectedItemOnItem`) works the same way,
 gated by `Item.combinesWithItemIds` plus an `on-combine` interaction entry.
+`Npc.interactions` and `DialogueNode.responses[].script` are not resolved by
+`GameSession` yet — only hotspot interactions and item combination are.
 
 ### Declarative gating: `condition`/`effects`
 
-Content's `interactions[].source`/`scriptId` (Lua) is reserved for a future
-scripting engine this package doesn't run yet (see above). Gating "branches
-by current flags/inventory" and unlocking things still needs to work _now_,
-so `@deme/content-schema` additionally carries a small, deliberately
-non-Turing-complete pair of fields — plain data, not code, so they don't
-violate the "content is data, never code" rule — evaluated directly by
-`conditions.ts`, independent of any scripting:
+Every `scriptRef` (hotspot/item `interactions[]`) also carries a small,
+deliberately non-Turing-complete pair of fields — plain data, not code, so
+they don't violate the "content is data, never code" rule — evaluated
+directly by `conditions.ts`, independent of Lua:
 
 - **`condition`** (`{ requiredFlags?, forbiddenFlags?, requiredItemIds? }`)
   — gates a `scriptRef` entry (hotspot/item/npc `interactions[]`) or a
@@ -103,9 +107,32 @@ violate the "content is data, never code" rule — evaluated directly by
 - **`effects`** (`{ setFlags?, clearFlags? }`) — applied when a gated
   `scriptRef` entry fires or a dialogue response is chosen.
 
-Once the Lua scripting engine lands, `source`/`scriptId` can take over
-arbitrary side effects; `condition`/`effects` stay as the lightweight,
-sandboxing-free path for pure flag/inventory gating.
+`condition`/`effects` are the lightweight, sandboxing-free path for pure
+flag/inventory gating; `source`/`scriptId` (see "Scripting" below) is for
+logic those two fields can't express — an entry can use either, both, or
+neither.
+
+## Scripting
+
+`ScriptRef.source` (inline) or the Script entity `scriptId` resolves to (via
+`ContentLoaders#loadScript`) is Lua 5.4, run to completion in a fresh,
+sandboxed wasmoon VM per execution (`lua-sandbox.ts`) — see
+[`docs/architecture.md`](../../docs/architecture.md#scripting) for the full
+threat model (whitelist-only globals, instruction budget, call-depth limit,
+memory ceiling, iframe + CSP isolation). `script-runtime.ts` binds the
+whitelisted game-state API — `hasFlag`/`hasItem`/`currentRoomId` (read),
+`setFlag`/`clearFlag`/`giveItem`/`removeItem`/`gotoRoom`/`describe` (act) —
+documented for content authors in
+[`docs/authoring-guide.md`](../../docs/authoring-guide.md#the-lua-sandboxs-whitelisted-api).
+
+`GameSession#runScriptRef` runs this after a matched entry's `effects` are
+applied (see above), for hotspot interactions and item combination. `giveItem`/
+`removeItem` go through `Inventory`, `gotoRoom` triggers `GameRuntime#loadRoom`,
+and `describe` fires the `script-message` event (`{ text }`) for the host UI
+to display. A script that throws — a sandbox limit, or an authoring bug like
+calling an undefined function — doesn't propagate: `GameSession` catches it
+and fires `script-error` (`{ hook, message }`) instead, so one bad script
+can't take down the session.
 
 ### Dialogue
 

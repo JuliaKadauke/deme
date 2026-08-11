@@ -1,0 +1,13 @@
+# HTTP-header-level CSP hardening on top of the meta-tag CSP in
+# index.html/play.html — see README.md. `frame-ancestors` and
+# `X-Frame-Options` can only be set via HTTP headers, never a <meta> tag,
+# so they live here instead. This file uses the Netlify/Cloudflare Pages
+# `_headers` convention (copied verbatim from public/ into dist/ by Vite);
+# other static hosts need the equivalent config in their own format.
+
+/play.html
+  Content-Security-Policy: frame-ancestors 'self'
+  X-Frame-Options: SAMEORIGIN
+
+/
+  X-Frame-Options: DENY

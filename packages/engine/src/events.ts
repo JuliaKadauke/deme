@@ -109,6 +109,17 @@ export interface GameLoadedEvent {
   key: string;
 }
 
+/** Fired when a sandboxed interaction script calls `describe(text)` to show the player a message. */
+export interface ScriptMessageEvent {
+  text: string;
+}
+
+/** Fired when a sandboxed interaction script fails (a bug, or adversarial content hitting a sandbox limit) — the script is aborted, but the session keeps running. */
+export interface ScriptErrorEvent {
+  hook: Hook;
+  message: string;
+}
+
 export interface EngineEventMap extends Record<string, unknown> {
   "hotspot-interact": HotspotInteractEvent;
   "room-exit": RoomExitEvent;
@@ -126,6 +137,8 @@ export interface EngineEventMap extends Record<string, unknown> {
   "dialogue-ended": DialogueEndedEvent;
   "game-saved": GameSavedEvent;
   "game-loaded": GameLoadedEvent;
+  "script-message": ScriptMessageEvent;
+  "script-error": ScriptErrorEvent;
 }
 
 type Listener<T> = (event: T) => void;

@@ -32,14 +32,25 @@ const loaders: ContentLoaders = {
   loadItem: async (id) => ({ "brass-key": brassKey })[id]!,
   loadNpc: async (id) => ({ jeeves, aria })[id]!,
   loadDialogueTree: async (id) => ({ "jeeves-intro": jeevesIntro, "aria-intro": ariaIntro })[id]!,
+  loadScript: async (id) => {
+    throw new Error(`unexpected loadScript("${id}") — this fixture only uses inline source`);
+  },
 };
 
 function tapAt(stage: Container, x: number, y: number): void {
   stage.emit("pointertap", { global: { x, y } } as unknown as FederatedPointerEvent);
 }
 
-function flush(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 0));
+/**
+ * Flushes pending async work (hotspot handling, including a sandboxed Lua
+ * script run) before assertions. Loops a few event-loop turns rather than
+ * one, since wasmoon's first-ever WASM cold-start can take more than a
+ * single `setTimeout(0)` tick.
+ */
+async function flush(): Promise<void> {
+  for (let i = 0; i < 20; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
 }
 
 async function makeSession() {
@@ -103,6 +114,8 @@ describe("acceptance: state, inventory, dialogue, save/load", () => {
 
   it("picks up the brass key, and using it unlocks the flag-gated desk interaction", async () => {
     const { stage, session } = await makeSession();
+    const messages: unknown[] = [];
+    session.events.on("script-message", (e) => messages.push(e));
 
     expect(session.state.hasFlag("desk-unlocked")).toBe(false);
 
@@ -120,6 +133,12 @@ describe("acceptance: state, inventory, dialogue, save/load", () => {
     tapAt(stage, ...DESK);
     await flush();
     expect(session.state.hasFlag("desk-unlocked")).toBe(true);
+
+    // The desk's on-use interaction also runs a Lua combination-lock-style
+    // check (hasItem gate → setFlag + describe) through the sandboxed VM —
+    // this flag is set only by that script, not by the declarative effects.
+    expect(session.state.hasFlag("desk-unlocked-by-script")).toBe(true);
+    expect(messages).toEqual(expect.arrayContaining([{ text: "The lock clicks open." }]));
   });
 
   it("reveals the flag-gated dialogue branch on both NPCs once the desk is unlocked", async () => {
@@ -165,7 +184,7 @@ describe("acceptance: state, inventory, dialogue, save/load", () => {
     expect(expected).toEqual({
       version: 1,
       currentRoomId: "escape-room",
-      flags: ["desk-unlocked", "met-jeeves"],
+      flags: ["desk-unlocked", "desk-unlocked-by-script", "met-jeeves"],
       inventory: ["brass-key"],
     });
     session.save(storage);

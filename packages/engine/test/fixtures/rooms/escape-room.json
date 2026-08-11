@@ -31,7 +31,7 @@
           "hook": "on-use",
           "condition": { "requiredItemIds": ["brass-key"] },
           "effects": { "setFlags": ["desk-unlocked"] },
-          "source": "if hasItem(\"brass-key\") then\n  unlockContainer(\"desk\")\n  describe(\"The lock clicks open.\")\nend"
+          "source": "if hasItem(\"brass-key\") then\n  setFlag(\"desk-unlocked-by-script\")\n  describe(\"The lock clicks open.\")\nend"
         },
         { "hook": "on-use", "source": "describe(\"It's locked. You need a key.\")" }
       ]
