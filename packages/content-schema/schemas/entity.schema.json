@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Entity",
+  "description": "Placeholder base schema for deme content entities. Concrete entity schemas (room, item, npc, dialogue, script) land in follow-up Jobs.",
+  "type": "object",
+  "required": ["id", "type"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable, explicit identifier used for all cross-entity references.",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "type": {
+      "type": "string",
+      "description": "Discriminator for which concrete entity schema this file follows."
+    }
+  },
+  "additionalProperties": true
+}

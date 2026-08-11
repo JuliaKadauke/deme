@@ -1,0 +1,7 @@
+node_modules/
+dist/
+tsc-out/
+coverage/
+*.tsbuildinfo
+.DS_Store
+*.log
