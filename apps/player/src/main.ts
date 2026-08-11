@@ -1,6 +1,6 @@
-import { renderShell } from "./app.js";
+import { boot } from "./app.js";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 if (root) {
-  renderShell(root);
+  void boot(root);
 }

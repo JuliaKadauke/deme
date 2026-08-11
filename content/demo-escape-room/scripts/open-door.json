@@ -1,0 +1,6 @@
+{
+  "id": "open-door",
+  "type": "script",
+  "description": "The escape room's win condition: the sandboxed Lua VM checks for the door key and, if present, transitions the player to the epilogue room.",
+  "source": "if hasItem(\"door-key\") then\n  describe(\"The iron key grinds in the lock. The door swings open onto the night air. You're free.\")\n  gotoRoom(\"freedom\")\nelse\n  describe(\"The door is bolted shut. It needs a proper key, not brute force.\")\nend"
+}

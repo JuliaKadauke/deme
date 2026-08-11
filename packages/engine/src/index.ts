@@ -64,6 +64,7 @@ export {
   DEFAULT_LUA_SANDBOX_LIMITS,
   LuaInstructionBudgetExceededError,
   runSandboxedLua,
+  setLuaWasmUri,
   type LuaApi,
   type LuaSandboxLimits,
 } from "./lua-sandbox.js";

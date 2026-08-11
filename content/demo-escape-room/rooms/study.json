@@ -1,0 +1,75 @@
+{
+  "id": "study",
+  "type": "room",
+  "name": "The Sealed Study",
+  "description": "A locked study. A shelf, a writing desk, and a heavy door out — plus Jeeves and ARIA, for whatever help they're willing to give.",
+  "background": "assets/rooms/study/background.png",
+  "walkBox": [
+    [60, 400],
+    [740, 400],
+    [740, 560],
+    [60, 560]
+  ],
+  "hotspots": [
+    {
+      "id": "shelf",
+      "name": "Shelf",
+      "description": "A dusty shelf.",
+      "targetItemId": "brass-key",
+      "area": { "shape": "rect", "x": 20, "y": 410, "width": 90, "height": 80 },
+      "interactions": [
+        { "hook": "on-look", "source": "describe(\"A small brass key glints on the shelf.\")" }
+      ]
+    },
+    {
+      "id": "desk",
+      "name": "Writing Desk",
+      "description": "A heavy oak desk with a small brass lock on the drawer.",
+      "area": { "shape": "rect", "x": 160, "y": 350, "width": 380, "height": 150 },
+      "interactions": [
+        {
+          "hook": "on-look",
+          "source": "describe(\"A heavy oak desk. The drawer has a small brass lock.\")"
+        },
+        { "hook": "on-use", "scriptId": "unlock-desk" }
+      ]
+    },
+    {
+      "id": "door",
+      "name": "Door",
+      "description": "A heavy door, bolted shut.",
+      "area": { "shape": "rect", "x": 400, "y": 120, "width": 100, "height": 130 },
+      "interactions": [
+        {
+          "hook": "on-look",
+          "source": "describe(\"A heavy door. It won't budge without the right key.\")"
+        },
+        { "hook": "on-use", "scriptId": "open-door" }
+      ]
+    },
+    {
+      "id": "jeeves-spot",
+      "name": "Jeeves",
+      "targetNpcId": "jeeves",
+      "area": { "shape": "rect", "x": 490, "y": 150, "width": 90, "height": 120 },
+      "interactions": [
+        {
+          "hook": "on-look",
+          "source": "describe(\"Jeeves stands ready to help, if asked politely.\")"
+        }
+      ]
+    },
+    {
+      "id": "aria-spot",
+      "name": "ARIA",
+      "targetNpcId": "aria",
+      "area": { "shape": "rect", "x": 400, "y": 280, "width": 90, "height": 120 },
+      "interactions": [
+        { "hook": "on-look", "source": "describe(\"A small speaker glows softly, listening.\")" }
+      ]
+    }
+  ],
+  "npcIds": ["jeeves", "aria"],
+  "itemIds": [],
+  "exits": []
+}

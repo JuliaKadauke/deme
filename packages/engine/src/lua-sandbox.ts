@@ -1,6 +1,28 @@
 import { LuaEventMasks, LuaFactory, type LuaGlobal } from "wasmoon";
 
 /**
+ * Overrides the URL wasmoon fetches its `glue.wasm` from. Must be called (if
+ * at all) before the first {@link runSandboxedLua} call, since the factory
+ * below is a lazy singleton — see its own comment. Only matters in a
+ * browser: without this, wasmoon's `LuaFactory` defaults an unset
+ * `customWasmUri` to `https://unpkg.com/wasmoon@<version>/dist/glue.wasm`
+ * whenever `window`/`self` exist, which `play.html`'s `connect-src 'self'`
+ * CSP blocks outright (see docs/architecture.md#scripting) — wasmoon expects
+ * bundler consumers to resolve and supply this themselves, not rely on its
+ * zero-config default. `apps/player` supplies a same-origin, Vite-bundled
+ * URL (`import wasmUrl from "wasmoon/dist/glue.wasm?url"`); this is
+ * host/bundler-specific, same as `GameSession`'s `loadTexture`, so it's
+ * host-supplied rather than baked into this package. Under plain Node
+ * (this package's own test suite), `window` is undefined and wasmoon
+ * resolves the WASM relative to its own install location instead, so tests
+ * don't need to call this at all.
+ */
+let wasmUriOverride: string | undefined;
+export function setLuaWasmUri(uri: string): void {
+  wasmUriOverride = uri;
+}
+
+/**
  * One shared factory for the whole process, created lazily on first use (not
  * at module load) so merely importing this module — or `@deme/engine` as a
  * whole — never eagerly initializes the wasmoon WASM glue. Its constructor
@@ -11,7 +33,7 @@ import { LuaEventMasks, LuaFactory, type LuaGlobal } from "wasmoon";
  */
 let factory: LuaFactory | undefined;
 function getFactory(): LuaFactory {
-  return (factory ??= new LuaFactory());
+  return (factory ??= new LuaFactory(wasmUriOverride));
 }
 
 export interface LuaSandboxLimits {

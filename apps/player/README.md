@@ -41,14 +41,26 @@ that path). Deploying elsewhere (a different static host, a CDN, an nginx
 config) needs the equivalent header configuration in that platform's own
 format — copy the two header lines in `_headers`.
 
-## A note for whoever wires wasmoon into this app
+## wasmoon's `.wasm` load
 
-`play.html`'s CSP and the iframe's opaque origin are already in place, but
-nothing in this app loads wasmoon yet — that integration lives in
-`@deme/engine` (`packages/engine/src/lua-sandbox.ts`) and is currently only
-exercised from its own test suite (Node, not a browser). When `GameSession`
-gets wired into `play.html`, double-check wasmoon's `.wasm` binary load: an
-opaque-origin iframe's `fetch()` calls are cross-origin with respect to
-same-server URLs, so the server response for that `.wasm` file (and any
-other asset wasmoon fetches) needs `Access-Control-Allow-Origin: *` or the
-load will be blocked by CORS, not just by the sandbox.
+`src/app.ts` imports wasmoon's `glue.wasm` as a Vite asset
+(`import wasmUrl from "wasmoon/dist/glue.wasm?url"`) and passes it to
+`@deme/engine`'s `setLuaWasmUri` before booting a `GameSession`. This isn't
+optional wiring: `wasmoon`'s `LuaFactory` defaults an unset wasm URI to
+`https://unpkg.com/wasmoon@<version>/dist/glue.wasm` whenever it detects a
+browser (`window`/`self`), which `play.html`'s `connect-src 'self'` CSP
+blocks outright — wasmoon expects bundler consumers to resolve and supply
+the URI themselves rather than rely on that default. See
+[`setLuaWasmUri`'s doc comment](../../packages/engine/src/lua-sandbox.ts)
+for the full explanation.
+
+Separately: the opaque origin `play.html`'s sandboxed iframe runs under
+makes every subresource fetch it makes — its own JS/CSS bundle, that
+`.wasm` file, content images — cross-origin _with respect to this same
+server_, even though the URL is same-path (an opaque origin can never be
+"same-origin" with anything). Vite already marks the module script/
+stylesheet tags `crossorigin`, so those go out as real CORS requests;
+[`public/_headers`](./public/_headers) answers all of them with
+`Access-Control-Allow-Origin: *` — without it, nothing here would load at
+all once actually served (not just wasmoon), CORS-blocked rather than
+sandbox-blocked.

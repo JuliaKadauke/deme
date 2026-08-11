@@ -6,5 +6,5 @@
     "types": ["vite/client"]
   },
   "include": ["src"],
-  "references": [{ "path": "../../packages/engine" }]
+  "references": [{ "path": "../../packages/engine" }, { "path": "../../packages/content-schema" }]
 }
