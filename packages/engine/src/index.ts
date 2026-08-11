@@ -33,6 +33,8 @@ export {
   type PlayerWalkEvent,
   type RoomExitEvent,
   type RoomLoadedEvent,
+  type ScriptErrorEvent,
+  type ScriptMessageEvent,
 } from "./events.js";
 export { Player, type PlayerOptions } from "./player.js";
 export { RoomController } from "./room-controller.js";
