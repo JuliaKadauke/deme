@@ -1,0 +1,17 @@
+{
+  "id": "test-room-2",
+  "type": "room",
+  "name": "Second Test Room",
+  "description": "The room the test-room fixture's door hotspot exits into.",
+  "background": "backgrounds/test-room-2.png",
+  "walkBox": [
+    [40, 300],
+    [460, 300],
+    [460, 420],
+    [40, 420]
+  ],
+  "hotspots": [],
+  "npcIds": [],
+  "itemIds": [],
+  "exits": []
+}

@@ -117,6 +117,7 @@ Not a standalone content file. A clickable region within a room's background.
 | `description` | no       |                                                                                                                                         |
 | `background`  | no       | asset path                                                                                                                              |
 | `hotspots`    | yes      | array of Hotspot (may be empty)                                                                                                         |
+| `walkBox`     | no       | polygon (≥3 `[x,y]` points) the player character can walk within; omit for rooms with no player movement                                |
 | `npcIds`      | no       | references `npc` entities present in the room                                                                                           |
 | `itemIds`     | no       | references `item` entities present in the room (not on a hotspot)                                                                       |
 | `exits`       | no       | array of `{hotspotId, targetRoomId}` — `hotspotId` must be one of this room's own hotspot ids; `targetRoomId` references another `room` |

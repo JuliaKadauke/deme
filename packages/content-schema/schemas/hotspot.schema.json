@@ -34,16 +34,7 @@
           "required": ["shape", "points"],
           "properties": {
             "shape": { "const": "polygon" },
-            "points": {
-              "type": "array",
-              "minItems": 3,
-              "items": {
-                "type": "array",
-                "minItems": 2,
-                "maxItems": 2,
-                "items": { "type": "number" }
-              }
-            }
+            "points": { "$ref": "common.schema.json#/definitions/polygonPoints" }
           },
           "additionalProperties": false
         }

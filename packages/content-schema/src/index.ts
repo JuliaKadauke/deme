@@ -10,6 +10,7 @@ export type {
   HotspotArea,
   Item,
   Npc,
+  PolygonPoints,
   Room,
   Script,
   ScriptRef,

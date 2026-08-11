@@ -19,6 +19,10 @@
       "items": { "$ref": "hotspot.schema.json" },
       "default": []
     },
+    "walkBox": {
+      "description": "The polygon within the room's background image where the player character can walk. Click-to-walk targets outside this polygon are clamped to its nearest edge. Omit for a room with no player movement (e.g. a cutscene-only room).",
+      "$ref": "common.schema.json#/definitions/polygonPoints"
+    },
     "npcIds": {
       "type": "array",
       "description": "References content/npcs/*.json entities present in this room.",

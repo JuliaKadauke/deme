@@ -6,7 +6,10 @@ Decisions locked in during design discussion (2026-08-11) for EPIC-223.
 
 [PixiJS](https://pixijs.com/) — a thin 2D renderer, without the
 physics/tilemap opinions a LucasArts-style room-based point-and-click engine
-doesn't need. Lives in `packages/engine`.
+doesn't need. Lives in `packages/engine`; see
+[`packages/engine/README.md`](../packages/engine/README.md) for the
+rendering runtime's interaction model (verb-based hotspot interaction),
+event contract, and walk-box-based player movement.
 
 ## Content format
 

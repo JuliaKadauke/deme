@@ -15,6 +15,17 @@
       "description": "The interaction event that triggers a script.",
       "enum": ["on-look", "on-use", "on-talk", "on-combine"]
     },
+    "polygonPoints": {
+      "type": "array",
+      "description": "A simple polygon as an ordered list of [x, y] vertices in the room's background image coordinate space.",
+      "minItems": 3,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": { "type": "number" }
+      }
+    },
     "scriptRef": {
       "type": "object",
       "description": "A reference to a Lua script attached to an interaction hook. Exactly one of `scriptId` (a reference to a content/scripts/*.json entity) or `source` (inline Lua source) must be present.",

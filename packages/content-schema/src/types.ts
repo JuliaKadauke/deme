@@ -18,9 +18,12 @@ export type ScriptRef = { hook: Hook } & (
   { scriptId: EntityId; source?: never } | { scriptId?: never; source: string }
 );
 
+/** An ordered list of [x, y] vertices in the room's background image coordinate space. */
+export type PolygonPoints = [number, number][];
+
 export type HotspotArea =
   | { shape: "rect"; x: number; y: number; width: number; height: number }
-  | { shape: "polygon"; points: [number, number][] };
+  | { shape: "polygon"; points: PolygonPoints };
 
 /** A clickable/interactive region embedded within a Room. */
 export interface Hotspot {
@@ -43,6 +46,8 @@ export interface Room {
   description?: string;
   background?: string;
   hotspots: Hotspot[];
+  /** The polygon where the player character can walk. Omit for rooms with no player movement. */
+  walkBox?: PolygonPoints;
   /** References NPC entities present in this room. */
   npcIds?: EntityId[];
   /** References Item entities initially present in this room. */
