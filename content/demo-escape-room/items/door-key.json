@@ -1,0 +1,14 @@
+{
+  "id": "door-key",
+  "type": "item",
+  "name": "Heavy Door Key",
+  "description": "A heavy iron key, cold to the touch.",
+  "portable": true,
+  "icon": "assets/items/door-key.png",
+  "interactions": [
+    {
+      "hook": "on-look",
+      "source": "describe(\"Old iron, worn smooth. It looks like it belongs to the study door.\")"
+    }
+  ]
+}

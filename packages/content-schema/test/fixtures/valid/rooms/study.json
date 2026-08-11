@@ -1,0 +1,46 @@
+{
+  "id": "study",
+  "type": "room",
+  "name": "The Study",
+  "description": "A dusty study with a locked writing desk and heavy velvet curtains.",
+  "background": "assets/rooms/study/background.png",
+  "hotspots": [
+    {
+      "id": "desk",
+      "name": "Writing Desk",
+      "description": "A heavy oak desk with a small brass lock.",
+      "area": { "shape": "rect", "x": 120, "y": 260, "width": 160, "height": 90 },
+      "interactions": [
+        {
+          "hook": "on-look",
+          "source": "describe(\"A locked writing desk. The keyhole looks like it wants a small brass key.\")"
+        },
+        { "hook": "on-use", "scriptId": "unlock-desk" }
+      ]
+    },
+    {
+      "id": "butler-spot",
+      "name": "Jeeves",
+      "targetNpcId": "butler",
+      "area": { "shape": "rect", "x": 400, "y": 180, "width": 100, "height": 220 },
+      "interactions": [
+        {
+          "hook": "on-look",
+          "source": "describe(\"Jeeves stands ready to help, if asked politely.\")"
+        }
+      ]
+    },
+    {
+      "id": "shelf",
+      "name": "Shelf",
+      "targetItemId": "brass-key",
+      "area": { "shape": "rect", "x": 20, "y": 100, "width": 60, "height": 40 },
+      "interactions": [
+        { "hook": "on-look", "source": "describe(\"A small brass key glints on the shelf.\")" }
+      ]
+    }
+  ],
+  "npcIds": ["butler"],
+  "itemIds": [],
+  "exits": []
+}

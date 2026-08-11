@@ -1,0 +1,27 @@
+# HTTP-header-level CSP hardening on top of the meta-tag CSP in
+# index.html/play.html — see README.md. `frame-ancestors` and
+# `X-Frame-Options` can only be set via HTTP headers, never a <meta> tag,
+# so they live here instead. This file uses the Netlify/Cloudflare Pages
+# `_headers` convention (copied verbatim from public/ into dist/ by Vite);
+# other static hosts need the equivalent config in their own format.
+
+/play.html
+  Content-Security-Policy: frame-ancestors 'self'
+  X-Frame-Options: SAMEORIGIN
+
+/
+  X-Frame-Options: DENY
+
+# play.html runs inside an iframe sandboxed *without* `allow-same-origin`
+# (see README.md), so it has a unique opaque origin on every load — every
+# subresource fetch it makes (its own JS/CSS bundle, wasmoon's glue.wasm,
+# content images) is therefore cross-origin *with respect to this same
+# server*, even though the URL is same-path. Vite already marks the module
+# script/stylesheet tags `crossorigin`, so the browser sends those as real
+# CORS requests; without this header those requests — and everything else
+# play.html fetches — would be blocked, and the game would fail to load
+# entirely. This is intentionally wide open (`*`): nothing served here is
+# per-user or credentialed, and the isolation this app relies on comes from
+# the opaque origin/CSP, not from withholding CORS.
+/*
+  Access-Control-Allow-Origin: *

@@ -1,0 +1,34 @@
+{
+  "id": "aria-intro",
+  "type": "dialogueTree",
+  "npcId": "aria",
+  "rootNodeId": "greet",
+  "nodes": [
+    {
+      "id": "greet",
+      "speaker": "npc",
+      "text": "Hello. How can I help?",
+      "responses": [
+        { "text": "Have you seen a key around here?", "targetNodeId": "about-key" },
+        {
+          "text": "Well done unlocking the desk.",
+          "targetNodeId": "about-desk",
+          "condition": { "requiredFlags": ["desk-unlocked"] }
+        },
+        { "text": "Never mind.", "effects": { "setFlags": ["met-aria"] } }
+      ]
+    },
+    {
+      "id": "about-key",
+      "speaker": "npc",
+      "text": "Scanning records... yes, try the shelf.",
+      "responses": [{ "text": "Thank you." }]
+    },
+    {
+      "id": "about-desk",
+      "speaker": "npc",
+      "text": "Confirmed. Impeccable work.",
+      "responses": [{ "text": "Thanks." }]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+html,
+body,
+iframe {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+body,
+iframe {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}

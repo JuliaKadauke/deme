@@ -1,0 +1,6 @@
+{
+  "id": "unlock-desk",
+  "type": "script",
+  "description": "The desk's on-use puzzle check: only the sandboxed Lua VM decides whether the brass key opens the drawer and hands over the door key, not a declarative condition/effect pair.",
+  "source": "if hasFlag(\"desk-unlocked\") then\n  describe(\"The drawer is already open. You already took the heavy key inside.\")\nelseif hasItem(\"brass-key\") then\n  setFlag(\"desk-unlocked\")\n  giveItem(\"door-key\")\n  describe(\"The brass key turns with a click. Inside the drawer is a heavy iron door key.\")\nelse\n  describe(\"It's locked tight. It looks like it wants a small key.\")\nend"
+}

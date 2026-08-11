@@ -1,0 +1,24 @@
+{
+  "id": "freedom",
+  "type": "room",
+  "name": "Outside",
+  "description": "Free air, at last — the study door locked behind you.",
+  "background": "assets/rooms/freedom/background.png",
+  "hotspots": [
+    {
+      "id": "path",
+      "name": "The Path",
+      "description": "A path leads away from the study, into the dark.",
+      "area": { "shape": "rect", "x": 0, "y": 0, "width": 580, "height": 280 },
+      "interactions": [
+        {
+          "hook": "on-look",
+          "source": "describe(\"You made it out. The study door is locked behind you.\")"
+        }
+      ]
+    }
+  ],
+  "npcIds": [],
+  "itemIds": [],
+  "exits": []
+}

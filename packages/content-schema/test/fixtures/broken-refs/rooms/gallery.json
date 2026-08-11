@@ -1,0 +1,16 @@
+{
+  "id": "gallery",
+  "type": "room",
+  "name": "Gallery",
+  "hotspots": [
+    {
+      "id": "painting",
+      "name": "Painting",
+      "area": { "shape": "rect", "x": 0, "y": 0, "width": 10, "height": 10 },
+      "targetItemId": "missing-item",
+      "interactions": [{ "hook": "on-use", "scriptId": "missing-script" }]
+    }
+  ],
+  "npcIds": ["missing-npc"],
+  "exits": [{ "hotspotId": "not-a-hotspot", "targetRoomId": "gallery" }]
+}

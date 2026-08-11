@@ -1,0 +1,14 @@
+{
+  "id": "butler",
+  "type": "npc",
+  "name": "Jeeves",
+  "description": "The house butler, endlessly patient.",
+  "sprite": "assets/npcs/butler.png",
+  "dialogueTreeId": "butler-intro",
+  "interactions": [
+    {
+      "hook": "on-look",
+      "source": "describe(\"Jeeves stands at attention, awaiting instruction.\")"
+    }
+  ]
+}

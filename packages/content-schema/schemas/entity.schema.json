@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://deme.dev/schemas/entity.schema.json",
+  "title": "Entity",
+  "description": "Union of every top-level deme content entity type, discriminated by the `type` field. The validator dispatches to the concrete schema by `type` directly (for better error messages) rather than relying on this oneOf, but it is kept as the canonical list of known entity types.",
+  "oneOf": [
+    { "$ref": "room.schema.json" },
+    { "$ref": "item.schema.json" },
+    { "$ref": "npc.schema.json" },
+    { "$ref": "dialogue-tree.schema.json" },
+    { "$ref": "script.schema.json" }
+  ]
+}

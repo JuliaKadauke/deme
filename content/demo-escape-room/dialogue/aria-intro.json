@@ -1,0 +1,45 @@
+{
+  "id": "aria-intro",
+  "type": "dialogueTree",
+  "npcId": "aria",
+  "rootNodeId": "greet",
+  "nodes": [
+    {
+      "id": "greet",
+      "speaker": "npc",
+      "text": "Hello. How can I help?",
+      "responses": [
+        { "text": "Have you seen a key around here?", "targetNodeId": "about-key" },
+        {
+          "text": "I found a heavy key inside the desk.",
+          "targetNodeId": "about-door-key",
+          "condition": { "requiredItemIds": ["door-key"] }
+        },
+        {
+          "text": "Well done getting that desk open.",
+          "targetNodeId": "about-desk",
+          "condition": { "requiredFlags": ["desk-unlocked"] }
+        },
+        { "text": "Never mind.", "effects": { "setFlags": ["met-aria"] } }
+      ]
+    },
+    {
+      "id": "about-key",
+      "speaker": "npc",
+      "text": "Scanning records... yes, try the shelf.",
+      "responses": [{ "text": "Thank you." }]
+    },
+    {
+      "id": "about-desk",
+      "speaker": "npc",
+      "text": "Confirmed. Impeccable work.",
+      "responses": [{ "text": "Thanks." }]
+    },
+    {
+      "id": "about-door-key",
+      "speaker": "npc",
+      "text": "Analysis complete: that key matches the study door. Recommend departure.",
+      "responses": [{ "text": "Right." }]
+    }
+  ]
+}

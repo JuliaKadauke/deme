@@ -1,0 +1,110 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #1a1420;
+  color: #f2ece2;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+
+.game-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.canvas-host {
+  line-height: 0;
+  border: 2px solid #3a2f42;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bars {
+  display: flex;
+  width: 800px;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.verb-bar,
+.session-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.ui-button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  color: #3a2f42;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  background-image: url("../../../content/demo-escape-room/assets/ui/button.png");
+  background-size: 100% 100%;
+}
+
+.verb-button.active {
+  background-image: url("../../../content/demo-escape-room/assets/ui/button-active.png");
+}
+
+.ui-button:hover {
+  filter: brightness(1.08);
+}
+
+.ui-button:active {
+  filter: brightness(0.95);
+}
+
+.message-toast {
+  width: 800px;
+  min-height: 1.4em;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 14px;
+}
+
+.message-toast.is-error {
+  background: rgba(120, 20, 20, 0.75);
+}
+
+.message-toast[hidden] {
+  display: none;
+}
+
+.dialogue-box {
+  width: 800px;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 2px solid #3a2f42;
+}
+
+.dialogue-box[hidden] {
+  display: none;
+}
+
+.dialogue-line {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.dialogue-responses {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialogue-response {
+  text-align: left;
+}

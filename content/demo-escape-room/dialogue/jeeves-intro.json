@@ -1,0 +1,45 @@
+{
+  "id": "jeeves-intro",
+  "type": "dialogueTree",
+  "npcId": "jeeves",
+  "rootNodeId": "greet",
+  "nodes": [
+    {
+      "id": "greet",
+      "speaker": "npc",
+      "text": "Good evening. How may I be of service?",
+      "responses": [
+        { "text": "Have you seen a key around here?", "targetNodeId": "about-key" },
+        {
+          "text": "I found a heavy key inside the desk.",
+          "targetNodeId": "about-door-key",
+          "condition": { "requiredItemIds": ["door-key"] }
+        },
+        {
+          "text": "Well done getting that desk open.",
+          "targetNodeId": "about-desk",
+          "condition": { "requiredFlags": ["desk-unlocked"] }
+        },
+        { "text": "Never mind.", "effects": { "setFlags": ["met-jeeves"] } }
+      ]
+    },
+    {
+      "id": "about-key",
+      "speaker": "npc",
+      "text": "Why yes, I believe I saw one glinting on the shelf.",
+      "responses": [{ "text": "Thank you." }]
+    },
+    {
+      "id": "about-desk",
+      "speaker": "npc",
+      "text": "Indeed, sir. Impeccable work.",
+      "responses": [{ "text": "Thanks." }]
+    },
+    {
+      "id": "about-door-key",
+      "speaker": "npc",
+      "text": "Ah, that will be for the study door. Best be on your way, then.",
+      "responses": [{ "text": "Right." }]
+    }
+  ]
+}

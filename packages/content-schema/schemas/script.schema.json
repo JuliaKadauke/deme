@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://deme.dev/schemas/script.schema.json",
+  "title": "Script",
+  "description": "A shared, reusable Lua script entity, referenced from interaction rules via scriptId. One entity per file, conventionally content/scripts/<id>.json.",
+  "type": "object",
+  "required": ["id", "type", "source"],
+  "properties": {
+    "id": { "$ref": "common.schema.json#/definitions/entityId" },
+    "type": { "const": "script" },
+    "description": { "type": "string" },
+    "source": {
+      "type": "string",
+      "description": "Lua 5.4 source, run in the sandboxed engine VM.",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

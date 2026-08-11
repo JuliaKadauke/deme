@@ -1,0 +1,32 @@
+{
+  "id": "test-room",
+  "type": "room",
+  "name": "Test Room",
+  "description": "A hand-written fixture room used by @deme/engine's own tests (not shipped demo content).",
+  "background": "backgrounds/test-room.png",
+  "walkBox": [
+    [40, 300],
+    [460, 300],
+    [460, 420],
+    [40, 420]
+  ],
+  "hotspots": [
+    {
+      "id": "table",
+      "name": "Table",
+      "description": "A small wooden table.",
+      "area": { "shape": "rect", "x": 100, "y": 200, "width": 80, "height": 60 },
+      "interactions": [{ "hook": "on-look", "source": "describe(\"Just a table.\")" }]
+    },
+    {
+      "id": "door",
+      "name": "Door",
+      "description": "A heavy door leading further in.",
+      "area": { "shape": "rect", "x": 420, "y": 260, "width": 40, "height": 140 },
+      "interactions": [{ "hook": "on-use", "source": "gotoRoom(\"test-room-2\")" }]
+    }
+  ],
+  "npcIds": [],
+  "itemIds": [],
+  "exits": [{ "hotspotId": "door", "targetRoomId": "test-room-2" }]
+}

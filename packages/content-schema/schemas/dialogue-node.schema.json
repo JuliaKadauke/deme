@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://deme.dev/schemas/dialogue-node.schema.json",
+  "title": "DialogueNode",
+  "description": "A single line of dialogue and its possible player responses. Not a standalone content file — dialogue nodes live inline in dialogueTree.nodes[].",
+  "type": "object",
+  "required": ["id", "speaker", "text"],
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/definitions/entityId",
+      "description": "Unique within the owning dialogue tree. Referenced by rootNodeId and other nodes' responses[].targetNodeId."
+    },
+    "speaker": {
+      "type": "string",
+      "enum": ["npc", "player"]
+    },
+    "text": { "type": "string", "minLength": 1 },
+    "responses": {
+      "type": "array",
+      "description": "Player-selectable responses to this line. A response without targetNodeId ends the dialogue.",
+      "items": {
+        "type": "object",
+        "required": ["text"],
+        "properties": {
+          "text": { "type": "string", "minLength": 1 },
+          "targetNodeId": {
+            "$ref": "common.schema.json#/definitions/entityId",
+            "description": "References another node's id within the same dialogue tree. Omit to end the dialogue."
+          },
+          "script": {
+            "$ref": "common.schema.json#/definitions/scriptRef",
+            "description": "Optional script run when the player selects this response."
+          },
+          "condition": {
+            "$ref": "common.schema.json#/definitions/stateCondition",
+            "description": "Optional gate: this response is only offered to the player when the condition holds against current GameState."
+          },
+          "effects": {
+            "$ref": "common.schema.json#/definitions/stateEffect",
+            "description": "Optional GameState mutation applied when the player selects this response."
+          }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,11 @@
+{
+  "id": "aria",
+  "type": "npc",
+  "name": "ARIA",
+  "description": "A scripted \"AI voice assistant\" — mechanically identical to Jeeves' dialogue tree, no live LLM calls.",
+  "sprite": "assets/npcs/aria.png",
+  "dialogueTreeId": "aria-intro",
+  "interactions": [
+    { "hook": "on-look", "source": "describe(\"A small speaker glows softly, listening.\")" }
+  ]
+}
