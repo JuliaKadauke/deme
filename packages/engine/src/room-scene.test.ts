@@ -8,7 +8,7 @@ describe("RoomScene", () => {
     const room = loadFixtureRoom("test-room");
     const loadTexture = async () => Texture.WHITE;
 
-    const scene = await RoomScene.create(room, { loadTexture });
+    const scene = await RoomScene.create(room, { loadTexture, showHotspotDebug: true });
 
     expect(scene.container.label).toBe("room:test-room");
     expect(scene.container.children).toEqual([
@@ -38,6 +38,18 @@ describe("RoomScene", () => {
     const room = loadFixtureRoom("test-room");
     const scene = await RoomScene.create(room, { showHotspotDebug: false });
     expect(scene.hotspotLayer.children).toHaveLength(0);
+  });
+
+  it("omits the hotspot debug overlay by default (showHotspotDebug not passed)", async () => {
+    const room = loadFixtureRoom("test-room");
+    const scene = await RoomScene.create(room);
+    expect(scene.hotspotLayer.children).toHaveLength(0);
+  });
+
+  it("renders the hotspot debug overlay when showHotspotDebug is true", async () => {
+    const room = loadFixtureRoom("test-room");
+    const scene = await RoomScene.create(room, { showHotspotDebug: true });
+    expect(scene.hotspotLayer.children).toHaveLength(room.hotspots.length);
   });
 
   it("moves the player marker to track a given position", async () => {
