@@ -41,6 +41,7 @@ export class GameRuntime {
   private player: Player | undefined;
   private controller: RoomController | undefined;
   private scene: RoomScene | undefined;
+  private lastHoveredHotspotId: EntityId | undefined;
 
   constructor(options: GameRuntimeOptions) {
     this.stage = options.stage;
@@ -52,6 +53,7 @@ export class GameRuntime {
 
     this.stage.eventMode = "static";
     this.stage.on("pointertap", this.onPointerTap);
+    this.stage.on("pointermove", this.onPointerMove);
   }
 
   get currentRoom(): Room | undefined {
@@ -97,6 +99,7 @@ export class GameRuntime {
     this.player = player;
     this.controller = controller;
     this.scene = scene;
+    this.lastHoveredHotspotId = undefined;
 
     this.events.emit("room-loaded", { room });
   }
@@ -111,6 +114,7 @@ export class GameRuntime {
 
   destroy(): void {
     this.stage.off("pointertap", this.onPointerTap);
+    this.stage.off("pointermove", this.onPointerMove);
     this.scene?.destroy();
   }
 
@@ -118,5 +122,15 @@ export class GameRuntime {
     if (!this.controller) return;
     const local = this.stage.toLocal(event.global);
     this.controller.handleClick(local);
+  };
+
+  private readonly onPointerMove = (event: FederatedPointerEvent): void => {
+    if (!this.controller) return;
+    const local = this.stage.toLocal(event.global);
+    const hotspot = this.controller.hitTestHotspot(local);
+    if (hotspot?.id === this.lastHoveredHotspotId) return;
+
+    this.lastHoveredHotspotId = hotspot?.id;
+    this.events.emit("hotspot-hover", { hotspot });
   };
 }

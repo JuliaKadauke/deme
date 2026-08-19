@@ -57,6 +57,7 @@ export interface Shell {
   dialogueBox: HTMLDivElement;
   dialogueLine: HTMLParagraphElement;
   dialogueResponses: HTMLDivElement;
+  hotspotTooltip: HTMLDivElement;
 }
 
 export function buildShell(root: HTMLElement): Shell {
@@ -66,6 +67,11 @@ export function buildShell(root: HTMLElement): Shell {
 
   const canvasHost = document.createElement("div");
   canvasHost.className = "canvas-host";
+
+  const hotspotTooltip = document.createElement("div");
+  hotspotTooltip.className = "hotspot-tooltip";
+  hotspotTooltip.hidden = true;
+  canvasHost.appendChild(hotspotTooltip);
 
   const bars = document.createElement("div");
   bars.className = "bars";
@@ -124,6 +130,7 @@ export function buildShell(root: HTMLElement): Shell {
     dialogueBox,
     dialogueLine,
     dialogueResponses,
+    hotspotTooltip,
   };
 }
 
@@ -137,6 +144,26 @@ export function showMessage(shell: Shell, text: string, isError = false): void {
   toastTimeout = setTimeout(() => {
     shell.messageToast.hidden = true;
   }, 3200);
+}
+
+/** Positions the hotspot tooltip at `position` (canvas-host-relative pixels) via the CSSOM `style` property — not `setAttribute`/HTML — so it works under play.html's `style-src` CSP, which has no `'unsafe-inline'`. */
+export function positionHotspotTooltip(shell: Shell, position: { x: number; y: number }): void {
+  shell.hotspotTooltip.style.left = `${position.x}px`;
+  shell.hotspotTooltip.style.top = `${position.y}px`;
+}
+
+export function showHotspotTooltip(
+  shell: Shell,
+  name: string,
+  position: { x: number; y: number },
+): void {
+  shell.hotspotTooltip.textContent = name;
+  shell.hotspotTooltip.hidden = false;
+  positionHotspotTooltip(shell, position);
+}
+
+export function hideHotspotTooltip(shell: Shell): void {
+  shell.hotspotTooltip.hidden = true;
 }
 
 export function setActiveVerb(shell: Shell, verb: Verb): void {
@@ -243,6 +270,24 @@ export async function boot(root: HTMLElement): Promise<GameSession> {
   session.events.on("item-removed", () => void refreshInventoryBar(session, inventoryBar));
   session.events.on("item-selected", () => void refreshInventoryBar(session, inventoryBar));
   session.events.on("item-deselected", () => void refreshInventoryBar(session, inventoryBar));
+
+  // hotspot-hover carries no pointer position of its own, so the last
+  // pointermove's canvas-host-relative position is tracked separately and
+  // reused both to place the tooltip on hover-in and to keep it following
+  // the cursor while it stays over the same hotspot.
+  let lastPointerPosition = { x: 0, y: 0 };
+  app.canvas.addEventListener("pointermove", (event) => {
+    const rect = shell.canvasHost.getBoundingClientRect();
+    lastPointerPosition = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    if (!shell.hotspotTooltip.hidden) positionHotspotTooltip(shell, lastPointerPosition);
+  });
+  session.events.on("hotspot-hover", (event) => {
+    if (event.hotspot) {
+      showHotspotTooltip(shell, event.hotspot.name, lastPointerPosition);
+    } else {
+      hideHotspotTooltip(shell);
+    }
+  });
 
   for (const [verb, button] of shell.verbButtons) {
     button.addEventListener("click", () => {

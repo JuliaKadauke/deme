@@ -180,6 +180,7 @@ export class GameSession {
     });
     this.runtime.events.on("room-exit", (event) => this.events.emit("room-exit", event));
     this.runtime.events.on("player-walk", (event) => this.events.emit("player-walk", event));
+    this.runtime.events.on("hotspot-hover", (event) => this.events.emit("hotspot-hover", event));
     this.runtime.events.on("hotspot-interact", (event) => {
       this.events.emit("hotspot-interact", event);
       void this.handleHotspotInteract(event);

@@ -25,6 +25,10 @@ function tapAt(stage: Container, x: number, y: number): void {
   stage.emit("pointertap", { global: { x, y } } as unknown as FederatedPointerEvent);
 }
 
+function moveTo(stage: Container, x: number, y: number): void {
+  stage.emit("pointermove", { global: { x, y } } as unknown as FederatedPointerEvent);
+}
+
 describe("GameRuntime", () => {
   it("loads a Room, renders its scene onto the stage, and fires room-loaded", async () => {
     const { stage, runtime } = makeRuntime();
@@ -75,6 +79,28 @@ describe("GameRuntime", () => {
     });
     expect(loaded).toEqual(["test-room", "test-room-2"]);
     expect(stage.children).toHaveLength(1); // old scene swapped out, not stacked
+  });
+
+  it("fires hotspot-hover exactly once per hover change, not per pointermove", async () => {
+    const { stage, runtime } = makeRuntime();
+    await runtime.loadRoom("test-room");
+
+    const hovers: unknown[] = [];
+    runtime.events.on("hotspot-hover", (event) => hovers.push(event));
+
+    moveTo(stage, 130, 220); // enters the "table" hotspot
+    moveTo(stage, 131, 221); // still inside "table" — should not re-fire
+    moveTo(stage, 132, 222); // still inside "table" — should not re-fire
+
+    expect(hovers).toEqual([{ hotspot: expect.objectContaining({ id: "table" }) }]);
+
+    moveTo(stage, 0, 0); // outside any hotspot — fires hover-out
+    moveTo(stage, 1, 1); // still outside any hotspot — should not re-fire
+
+    expect(hovers).toEqual([
+      { hotspot: expect.objectContaining({ id: "table" }) },
+      { hotspot: undefined },
+    ]);
   });
 
   it("walks the player to a click-to-walk target, clamped within the room's walk box", async () => {
