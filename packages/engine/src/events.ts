@@ -35,6 +35,11 @@ export interface PlayerWalkEvent {
   to: Point;
 }
 
+/** Fired when the topmost hotspot under the pointer changes (including to/from none). */
+export interface HotspotHoverEvent {
+  hotspot: Hotspot | undefined;
+}
+
 /** Fired when an item is added to the inventory (picked up, or granted directly). */
 export interface ItemAddedEvent {
   itemId: EntityId;
@@ -125,6 +130,7 @@ export interface EngineEventMap extends Record<string, unknown> {
   "room-exit": RoomExitEvent;
   "room-loaded": RoomLoadedEvent;
   "player-walk": PlayerWalkEvent;
+  "hotspot-hover": HotspotHoverEvent;
   "item-added": ItemAddedEvent;
   "item-removed": ItemRemovedEvent;
   "item-picked-up": ItemPickedUpEvent;

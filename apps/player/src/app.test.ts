@@ -3,10 +3,12 @@ import { Container, Texture } from "pixi.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildShell,
+  hideHotspotTooltip,
   onInventorySelect,
   refreshInventoryBar,
   renderDialogue,
   setActiveVerb,
+  showHotspotTooltip,
   showMessage,
 } from "./app.js";
 import { DEMO_START_ROOM_ID, demoContentLoaders } from "./content.js";
@@ -90,6 +92,28 @@ describe("renderDialogue", () => {
 
     (buttons[1] as HTMLButtonElement).click();
     expect(chooseSpy).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("hotspot tooltip", () => {
+  it("shows the hotspot's name as text on hover-in, and hides on hover-out", () => {
+    const shell = buildShell(document.createElement("div"));
+    expect(shell.hotspotTooltip.hidden).toBe(true);
+
+    showHotspotTooltip(shell, "Brass Key", { x: 10, y: 20 });
+    expect(shell.hotspotTooltip.hidden).toBe(false);
+    expect(shell.hotspotTooltip.textContent).toBe("Brass Key");
+
+    hideHotspotTooltip(shell);
+    expect(shell.hotspotTooltip.hidden).toBe(true);
+  });
+
+  it("never uses innerHTML for the hotspot name, even if it contains markup", () => {
+    const shell = buildShell(document.createElement("div"));
+    showHotspotTooltip(shell, "<img src=x onerror=alert(1)>", { x: 0, y: 0 });
+
+    expect(shell.hotspotTooltip.textContent).toBe("<img src=x onerror=alert(1)>");
+    expect(shell.hotspotTooltip.querySelector("img")).toBeNull();
   });
 });
 
