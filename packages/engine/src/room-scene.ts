@@ -9,9 +9,11 @@ export interface RoomSceneOptions {
   loadTexture?: TextureLoader;
   /**
    * Draws each hotspot's clickable area as a translucent overlay. Defaults
-   * to true: the demo game has no art yet (see docs/architecture.md — the
-   * art pipeline is deferred to a future epic), so hotspot outlines are the
-   * only visual cue during development.
+   * to false: rooms now have real background/sprite art, so these outlines
+   * would render on top of finished art rather than substitute for missing
+   * art. Opt in (e.g. via a host app's `?debug` URL param) for a dev view
+   * that shows hotspot outlines, such as when placing/checking hotspot
+   * coordinates while authoring content.
    */
   showHotspotDebug?: boolean;
 }
@@ -63,7 +65,7 @@ export class RoomScene {
   }
 
   private buildHotspots(): void {
-    if (this.options.showHotspotDebug === false) return;
+    if (this.options.showHotspotDebug !== true) return;
     for (const hotspot of this.room.hotspots) {
       const graphics = this.buildHotspotGraphics(hotspot);
       this.hotspotGraphicsById.set(hotspot.id, graphics);

@@ -7,6 +7,7 @@ import {
   onInventorySelect,
   refreshInventoryBar,
   renderDialogue,
+  resolveShowHotspotDebug,
   setActiveVerb,
   showHotspotTooltip,
   showMessage,
@@ -39,6 +40,19 @@ describe("buildShell", () => {
     root.innerHTML = "<p>stale</p>";
     buildShell(root);
     expect(root.textContent).not.toContain("stale");
+  });
+});
+
+describe("resolveShowHotspotDebug", () => {
+  it("is false with no debug param, so hotspot overlays stay off by default", () => {
+    expect(resolveShowHotspotDebug("")).toBe(false);
+    expect(resolveShowHotspotDebug("?foo=bar")).toBe(false);
+  });
+
+  it("is true when ?debug is present, with or without a value", () => {
+    expect(resolveShowHotspotDebug("?debug")).toBe(true);
+    expect(resolveShowHotspotDebug("?debug=1")).toBe(true);
+    expect(resolveShowHotspotDebug("?foo=bar&debug")).toBe(true);
   });
 });
 

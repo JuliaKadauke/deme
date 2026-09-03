@@ -206,6 +206,15 @@ export function onInventorySelect(session: GameSession, itemId: EntityId): void 
   }
 }
 
+/**
+ * Whether the page URL opts into the hotspot debug overlay, e.g.
+ * `?debug` or `?debug=1`. This is the only toggle for the overlay — no
+ * persistent settings UI, cookie/localStorage, or build-time flag.
+ */
+export function resolveShowHotspotDebug(search: string): boolean {
+  return new URLSearchParams(search).has("debug");
+}
+
 /** Boots the demo game into `root`: PixiJS canvas, verb/session chrome, dialogue box, message toast. */
 export async function boot(root: HTMLElement): Promise<GameSession> {
   const shell = buildShell(root);
@@ -240,12 +249,15 @@ export async function boot(root: HTMLElement): Promise<GameSession> {
   inventoryBar.container.y = 8;
   uiLayer.addChild(inventoryBar.container);
 
+  const showHotspotDebug = resolveShowHotspotDebug(location.search);
+
   const session = new GameSession({
     stage: gameLayer,
     loaders: demoContentLoaders,
     loadTexture: loadDemoTexture,
     startRoomId: DEMO_START_ROOM_ID,
     playerStart: { x: 400, y: 470 },
+    showHotspotDebug,
   });
 
   session.events.on("dialogue-started", (event) =>
