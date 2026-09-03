@@ -12,9 +12,12 @@ this page's DOM, cookies, or another game's saved data.
 
 ## The two pages
 
-- **`index.html`** — the host shell. Runs no game code and has no
-  `script-src` in its CSP at all; its only job is embedding `play.html` in
-  an `<iframe sandbox="allow-scripts">`.
+- **`index.html`** — the host shell. Runs no game code; its CSP's
+  `script-src` allows only `src/host.ts`, which forwards the page's query
+  string (e.g. `?debug`, see `RoomSceneOptions.showHotspotDebug`) onto the
+  iframe's `src` — a static `src` attribute can't see the top-level page's
+  URL on its own. Otherwise its only job is embedding `play.html` in an
+  `<iframe sandbox="allow-scripts">`.
 - **`play.html`** — where the game actually renders: PixiJS, `GameSession`,
   and the wasmoon VM. Its CSP allows `'wasm-unsafe-eval'` (WebAssembly
   compilation only — not general `eval`) alongside a hash-source/`data:`/

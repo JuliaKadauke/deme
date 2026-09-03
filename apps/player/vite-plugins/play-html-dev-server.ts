@@ -74,17 +74,18 @@ export function playHtmlDevServer(): Plugin {
 }
 
 /**
- * index.html's production CSP has no `script-src`/`connect-src` at all —
- * it's the inert host shell, it runs no game code, see README.md. `vite
- * dev` doesn't know that: it always injects its own HMR client script (and
- * its WebSocket connection back to the dev server) into every page it
- * serves, which that CSP then blocks (real console errors, `default-src
- * 'none'` catching both as a fallback). index.html is never sandboxed —
- * it's always the top-level page — so unlike play.html, a plain `'self'`
- * is completely fine for it (CSP's `'self'` for `connect-src` also permits
- * the matching `ws:`/`wss:` origin, which is what the HMR client uses);
- * this only ever runs in dev (`apply: "serve"`), so the committed file and
- * the production build are untouched.
+ * index.html's production CSP has no `connect-src` at all — it's the inert
+ * host shell (its only script is src/host.ts, which forwards the page's
+ * query string onto play.html's iframe src, see README.md). `vite dev`
+ * doesn't know that: it always injects its own HMR client script's
+ * WebSocket connection back to the dev server into every page it serves,
+ * which that CSP then blocks (`default-src 'none'` catching it as a
+ * fallback). index.html is never sandboxed — it's always the top-level
+ * page — so unlike play.html, a plain `'self'` is completely fine for it
+ * (CSP's `'self'` for `connect-src` also permits the matching `ws:`/`wss:`
+ * origin, which is what the HMR client uses); this only ever runs in dev
+ * (`apply: "serve"`), so the committed file and the production build are
+ * untouched.
  */
 export function indexHtmlDevCsp(): Plugin {
   return {
@@ -94,7 +95,7 @@ export function indexHtmlDevCsp(): Plugin {
       if (!ctx.filename.endsWith("index.html")) return html;
       return html.replace(
         /(<meta\s+http-equiv="Content-Security-Policy"\s+content="[^"]*)"/i,
-        (match, prefix: string) => `${prefix}; script-src 'self'; connect-src 'self'"`,
+        (match, prefix: string) => `${prefix}; connect-src 'self'"`,
       );
     },
   };
