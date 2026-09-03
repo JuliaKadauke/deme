@@ -4,24 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!--
-      Host shell: intentionally inert. It runs no game code and has no
-      script-src at all — its only job is to embed play.html (where the
-      game, and the sandboxed Lua/wasmoon VM, actually run) inside an
-      iframe sandboxed with just `allow-scripts`. Deliberately omitting
-      `allow-same-origin` is what makes this isolation real: it puts
-      play.html's content in a unique opaque origin, so even a full
-      VM-sandbox escape inside it has no origin to read this page's DOM,
-      cookies, or localStorage from, or to reach another game's saved data
-      through. See docs/architecture.md#scripting and README.md.
+      Host shell: intentionally inert. It runs no game code — its only job
+      is to embed play.html (where the game, and the sandboxed Lua/wasmoon
+      VM, actually run) inside an iframe sandboxed with just
+      `allow-scripts`. Deliberately omitting `allow-same-origin` is what
+      makes this isolation real: it puts play.html's content in a unique
+      opaque origin, so even a full VM-sandbox escape inside it has no
+      origin to read this page's DOM, cookies, or localStorage from, or to
+      reach another game's saved data through. See
+      docs/architecture.md#scripting and README.md.
+
+      The one exception is forward-debug-param.ts: a same-origin iframe
+      embed never inherits its parent page's query string on its own, so
+      without it a `?debug` typed into this page's URL (e.g. to opt into
+      the hotspot debug overlay — see RoomSceneOptions.showHotspotDebug in
+      packages/engine/src/room-scene.ts) would never reach play.html's own
+      `location.search`. That's the only reason this shell has a
+      `script-src` at all.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; style-src 'self'; frame-src 'self'; base-uri 'none'; form-action 'none'"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; frame-src 'self'; base-uri 'none'; form-action 'none'"
     />
     <link rel="stylesheet" href="/src/host.css" />
     <title>deme</title>
   </head>
   <body>
-    <iframe src="/play.html" sandbox="allow-scripts" title="deme"></iframe>
+    <iframe sandbox="allow-scripts" title="deme"></iframe>
+    <script type="module" src="/src/forward-debug-param.ts"></script>
   </body>
 </html>

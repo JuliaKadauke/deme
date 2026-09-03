@@ -48,3 +48,32 @@ test("index.html's sandboxed iframe loads play.html with no CSP violations and t
   expect(cspViolations, `CSP violations:\n${cspViolations.join("\n")}`).toEqual([]);
   expect(consoleErrors, `console errors:\n${consoleErrors.join("\n")}`).toEqual([]);
 });
+
+/**
+ * Regression test for index.html's iframe not forwarding its own query
+ * string to play.html: an iframe embed never inherits its parent page's
+ * query string on its own, so a `?debug` typed into index.html's URL (the
+ * page real users load) silently never reached play.html's own
+ * `location.search` — the hotspot debug overlay toggle from
+ * RoomSceneOptions.showHotspotDebug had no way to turn on. See
+ * src/forward-debug-param.ts and README.md.
+ */
+test("index.html forwards its query string onto play.html's iframe src", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+
+  await page.goto("/index.html?debug");
+  await expect(page.locator("iframe")).toHaveAttribute("src", "/play.html?debug");
+
+  const cspViolations = consoleErrors.filter((text) =>
+    /content security policy|refused to/i.test(text),
+  );
+  expect(cspViolations, `CSP violations:\n${cspViolations.join("\n")}`).toEqual([]);
+});
+
+test("index.html with no query param loads play.html with no debug param", async ({ page }) => {
+  await page.goto("/index.html");
+  await expect(page.locator("iframe")).toHaveAttribute("src", "/play.html");
+});
