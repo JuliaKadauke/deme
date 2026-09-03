@@ -106,3 +106,13 @@ preview:
     - pnpm --filter @deme/content-schema --filter @deme/engine run build
   start: pnpm --filter @deme/player exec vite --port $PORT --host 0.0.0.0 --strictPort
   health_check: /
+
+visual_review:
+  enabled: true
+  rounds: 1
+  when_files_changed:
+    - "apps/player/**"
+    - "packages/engine/src/room-scene.ts"
+    - "packages/engine/src/room-controller.ts"
+    - "content/**/rooms/**"
+    - "content/**/assets/**"
