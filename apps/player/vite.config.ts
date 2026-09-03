@@ -11,6 +11,14 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  server: {
+    // Vite's DNS-rebinding guard rejects any request whose Host header
+    // isn't localhost/the configured host, independent of the --host bind
+    // address. Syrus's preview proxy reaches this server through a
+    // container-network hostname, which that guard would otherwise block
+    // with a 403 even though the server is listening on 0.0.0.0.
+    allowedHosts: true,
+  },
   // play.html is loaded inside an opaque-origin sandboxed iframe (see
   // apps/player/README.md), under which its CSP's 'self' sources can never
   // match — see vite-plugins/inline-play-html.ts. The production build
